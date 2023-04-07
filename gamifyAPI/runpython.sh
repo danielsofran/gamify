@@ -1,0 +1,1 @@
+C:\Users\aerap\PycharmProjects\venvs\djangoEnv\Scripts\python.exe "$@"

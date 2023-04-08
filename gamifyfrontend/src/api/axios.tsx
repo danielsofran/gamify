@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const API_URL = "http://localhost:8000";
 
-const axiosGet =  axios.create({
+const axiosJson =  axios.create({
     baseURL: API_URL,
     headers: {
         "Content-type": "application/json"
@@ -10,7 +10,7 @@ const axiosGet =  axios.create({
     withCredentials: true,
 });
 
-const axiosPost =  axios.create({
+const axiosCsrf =  axios.create({
     baseURL: API_URL,
     headers: {
         "Content-type": "application/json",
@@ -19,7 +19,7 @@ const axiosPost =  axios.create({
     withCredentials: true,
 });
 
-const axiosPostImage =  axios.create({
+const axiosMultipart =  axios.create({
     baseURL: API_URL,
     headers: {
         "Content-type": "multipart/form-data",
@@ -28,11 +28,11 @@ const axiosPostImage =  axios.create({
     withCredentials: true,
 });
 
-var _csrfToken = getCsrfToken();
+var _csrfToken;
 
 export async function getCsrfToken():Promise<string> {
 
-    const response = await fetch(`${API_URL}/csrf/`, {
+    const response = await fetch(`${API_URL}/auth2/csrf/`, {
         credentials: 'include',
     });
     const data = await response.json();
@@ -40,8 +40,8 @@ export async function getCsrfToken():Promise<string> {
     return _csrfToken;
 }
 
-export function getCookie(name: string) : string|null {
-    let cookieValue = null;
+export function getCookie(name: string) : string {
+    let cookieValue = "";
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
         for (let i = 0; i < cookies.length; i++) {
@@ -56,4 +56,11 @@ export function getCookie(name: string) : string|null {
     return cookieValue;
 }
 
-export { axiosGet, axiosPost, axiosPostImage };
+export const DjangoCsrfToken = async () => {
+    let token: string = await getCsrfToken();
+    return (
+        <input type="hidden" name="csrfmiddlewaretoken" value={token}/>
+    )
+}
+
+export { axiosJson, axiosCsrf, axiosMultipart };

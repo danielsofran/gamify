@@ -1,10 +1,10 @@
 import {useNavigate, useParams, useSearchParams} from "react-router-dom";
 import React, {FormEvent, useEffect, useState} from "react";
-import {Position, UserType} from "../data/enums";
-import {API_URL, axiosGet, axiosPost, axiosPostImage, getCookie, getCsrfToken} from "../api/axios";
+import {Position, UserType} from "../../data/enums";
+import {API_URL, axiosJson, axiosCsrf, axiosMultipart, getCookie, getCsrfToken} from "../../api/axios";
 import {Button, Form} from "react-bootstrap";
-import {MyAlert} from "../components/Alerts";
-import {Employee, RegisterRequest} from "../data/User";
+import {MyAlert} from "../../components/Alerts";
+import {Employee, RegisterRequest} from "../../data/User";
 
 export const ViewRegisterRequest:React.FC<{request?: RegisterRequest}> = ({request = undefined}) => {
     const id = useParams().id;
@@ -34,7 +34,7 @@ export const ViewRegisterRequest:React.FC<{request?: RegisterRequest}> = ({reque
 
     useEffect(() => {
         if(request === undefined) {
-            axiosGet.get("auth2/get_register_request/" + id + "/").then((response) => {
+            axiosJson.get("auth2/get_register_request/" + id + "/").then((response) => {
                 request = RegisterRequest.deserialize(response.data);
                 setEmployeeFromRequest(request);
                 console.log(request, employee);
@@ -57,7 +57,7 @@ export const ViewRegisterRequest:React.FC<{request?: RegisterRequest}> = ({reque
             "tokens": tokens,
         }
 
-        axiosPost.post("auth2/save_register_request/", json).then((response) => {
+        axiosCsrf.post("auth2/save_register_request/", json).then((response) => {
             if (response.status === 200) {
                 setSuccess(response.statusText);
                 navigate('/ceo/register_requests/');
@@ -73,7 +73,7 @@ export const ViewRegisterRequest:React.FC<{request?: RegisterRequest}> = ({reque
             "register_request_id": employee.id,
             "accepted": false,
         }
-        axiosPost.post("auth2/save_register_request/", json).then((response) => {
+        axiosCsrf.post("auth2/save_register_request/", json).then((response) => {
             if (response.status === 200) {
                 setSuccess(response.statusText);
                 navigate('/ceo/register_requests/');

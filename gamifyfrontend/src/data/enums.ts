@@ -1,3 +1,9 @@
+export enum UserType {
+    Guest = -1,
+    Employee = 0,
+    CEO = 1,
+}
+
 export enum Position {
     INTERN = 0,
     JUNIOR = 1,
@@ -18,3 +24,9 @@ export enum Status {
     ACCEPTED = 'A',
     REJECTED = 'R',
 }
+
+export const QuestDifficultyMap = new Map<QuestDifficulty, string>([
+    [QuestDifficulty.EASY, 'Easy'],
+    [QuestDifficulty.MEDIUM, 'Medium'],
+    [QuestDifficulty.HARD, 'Hard'],
+]);

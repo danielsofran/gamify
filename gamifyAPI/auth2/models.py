@@ -23,6 +23,7 @@ class OwnUser(AbstractUser):
         return {
             'id': self.id,
             'username': self.username,
+            'password': self.password,
             'email': self.email,
             'first_name': self.first_name,
             'last_name': self.last_name,
@@ -31,7 +32,7 @@ class OwnUser(AbstractUser):
         }
 
 
-class Position(models.IntegerChoices):
+class EmployeePosition(models.IntegerChoices):
     INTERN = 0, 'Intern'
     JUNIOR = 1, 'Junior'
     MIDDLE = 2, 'Middle'
@@ -41,9 +42,10 @@ class Position(models.IntegerChoices):
 
 
 class Employee(models.Model):
+    user = models.OneToOneField('OwnUser', on_delete=models.CASCADE, null=True, blank=True, related_name='ownuser')
     date_employed = models.DateField()
     salary = models.PositiveIntegerField(default=2000)
-    position = models.IntegerField(choices=Position.choices, default=Position.INTERN)
+    position = models.IntegerField(choices=EmployeePosition.choices, default=EmployeePosition.INTERN)
     date_of_birth = models.DateField(default=datetime.date.fromisocalendar(1980, 1, 1))
 
     tokens = models.PositiveIntegerField(default=0)
@@ -59,7 +61,7 @@ class Employee(models.Model):
             'id': self.id,
             'date_employed': self.date_employed,
             'salary': self.salary,
-            'position': Position(self.position).label,
+            'position': self.position,
             'tokens': self.tokens,
             'discount_next_purchase': self.discount_next_purchase,
             'badges': [badge.serialize() for badge in self.badges.all()],

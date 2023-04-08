@@ -1,9 +1,10 @@
 import abc
+import datetime
 from abc import ABC
 
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from auth2.models import OwnUser, Employee, Position
+from auth2.models import OwnUser, Employee, EmployeePosition
 from . import settings
 
 
@@ -11,7 +12,7 @@ from . import settings
 class Badge(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=1000)
-    image = models.ImageField(upload_to='media/', null=True, blank=True)
+    image = models.ImageField(upload_to='media/')
 
     def serialize(self):
         return {
@@ -25,35 +26,35 @@ class Badge(models.Model):
         return self.name
 
 
+class QuestDifficulty(models.TextChoices):
+    EASY = 'E', 'Easy'
+    MEDIUM = 'M', 'Medium'
+    HARD = 'H', 'Hard'
+
+    @property
+    def tokens(self):
+        return settings.TOKEN_MINIMUM_PER_DIFFICULTY[self]
+
+
 class Quest(models.Model):
-    class Difficulty(models.TextChoices):
-        EASY = 'E', 'Easy'
-        MEDIUM = 'M', 'Medium'
-        HARD = 'H', 'Hard'
-
-        @property
-        def minimum_tokens(self) -> int:
-            res = {self.EASY: 0, self.MEDIUM: 100, self.HARD: 200}
-            return res[self]
-
     author = models.ForeignKey(OwnUser, on_delete=models.SET_NULL, null=True, blank=False)
     title = models.CharField(max_length=100)
-    difficulty = models.CharField(max_length=1, choices=Difficulty.choices)
+    difficulty = models.CharField(max_length=1, choices=QuestDifficulty.choices)
     description = models.CharField(max_length=1000)
-    date_start = models.DateField(auto_now_add=True)
-    date_end = models.DateField(validators=[MinValueValidator('date_start')])
+    datetime_start = models.DateTimeField(default=datetime.datetime.now())
+    datetime_end = models.DateTimeField(default=datetime.datetime.now())
     max_winners = models.PositiveIntegerField(default=1)
     tokens = models.PositiveIntegerField(default=0)
 
     def serialize(self):
         return {
             'id': self.id,
-            'author': self.author.serialize(),
+            'author': None if self.author is None else self.author.serialize(),
             'title': self.title,
             'difficulty': self.difficulty,
             'description': self.description,
-            'date_start': self.date_start,
-            'date_end': self.date_end,
+            'datetime_start': self.datetime_start,
+            'datetime_end': self.datetime_end,
             'max_winners': self.max_winners,
             'tokens': self.tokens,
         }
@@ -152,7 +153,7 @@ class SalaryIncreaseRequest(RewardRequest):
 
 
 class CareerDevelopmentRequest(RewardRequest):
-    position_requested = models.IntegerField(choices=Position.choices, default=Position.INTERN, validators=[MinValueValidator(Position.INTERN)])
+    position_requested = models.IntegerField(choices=EmployeePosition.choices, default=EmployeePosition.INTERN, validators=[MinValueValidator(EmployeePosition.INTERN)])
 
     @property
     def tokens(self) -> int:
@@ -164,7 +165,7 @@ class CareerDevelopmentRequest(RewardRequest):
         return {
             **super().serialize(),
             'description': self.description,
-            'position_requested': Position(self.position_requested).label,
+            'position_requested': self.position_requested,
             'tokens': self.tokens,
         }
 

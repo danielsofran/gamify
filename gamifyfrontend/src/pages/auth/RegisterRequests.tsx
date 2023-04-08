@@ -1,6 +1,6 @@
 import React, {useEffect} from "react";
-import {API_URL, axiosGet} from "../api/axios";
-import {RegisterRequest} from "../data/User";
+import {API_URL, axiosJson} from "../../api/axios";
+import {RegisterRequest} from "../../data/User";
 import {Button, Container} from "react-bootstrap";
 import {useNavigate} from "react-router-dom";
 
@@ -11,7 +11,7 @@ export const RegisterRequests = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        axiosGet.get('auth2/register_requests/').then((response) => {
+        axiosJson.get('auth2/register_requests/').then((response) => {
             let requestsJson = RegisterRequest.deserializeArray(response.data);
             setRequests(requestsJson);
         }).catch((error) => {

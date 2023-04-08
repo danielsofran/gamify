@@ -1,18 +1,19 @@
 import { useLocation, Navigate, Outlet } from "react-router-dom";
-import useAuth from "../hooks/useAuth";
+// import useAuth from "../hooks/useAuth";
 import React, {useEffect, useState} from "react";
-import {axiosGet} from "../api/axios";
-import {deserializeUser} from "../data/User";
+import {axiosJson} from "../api/axios";
+import {CEO, deserializeUser, Employee} from "../data/User";
+import {UserType} from "../data/enums";
 
-const RequireAuth = ({ allowedRoles }) => {
+const RequireAuth:React.FC<{allowedRoles: UserType[]}> = ({ allowedRoles }) => {
     // const { auth, setAuth } = useAuth();
     const location = useLocation();
-    const [user, setUser] = useState(null);
+    let [user, setUser] = useState<Employee | CEO | null>(null);
 
     useEffect(() => {
-        axiosGet.get('auth2/user/').then((response) => {
+        axiosJson.get('auth2/user/').then((response) => {
             let userJson = deserializeUser(response.data);
-            console.warn("Deserialized user: ", userJson)
+            // console.warn("Deserialized user: ", userJson)
             setUser(userJson);
             console.info("User: ", user)
             //setAuth({user, roles: [user.type]})
@@ -23,11 +24,12 @@ const RequireAuth = ({ allowedRoles }) => {
 
     return (
         // auth?.roles?.find(role => allowedRoles?.includes(role))
-        allowedRoles.includes(user?.type)
-            ? <Outlet />
-            : user === null
-                ? <Navigate to="/unauthorized" state={{ from: location }} replace />
-                : <Navigate to="/login" state={{ from: location }} replace />
+        <Outlet />
+        // user !== undefined && user !== null && allowedRoles.includes(user.type)
+        //     ? <Outlet />
+        //     : user === null || user === undefined
+        //         ? <Navigate to="/unauthorized" state={{ from: location }} replace />
+        //         : <Navigate to="/login" state={{ from: location }} replace />
     );
 }
 

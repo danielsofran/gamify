@@ -1,10 +1,10 @@
 import React, {ChangeEvent, useEffect, useState} from "react";
 import {Button, Form} from "react-bootstrap";
-import {MyAlert} from "../components/Alerts";
-import {axiosPostImage, getCookie, getCsrfToken} from "../api/axios";
-import useAuth from "../hooks/useAuth";
+import {MyAlert} from "../../components/Alerts";
+import {axiosMultipart, getCookie, getCsrfToken} from "../../api/axios";
+import useAuth from "../../hooks/useAuth";
 import {useNavigate} from "react-router-dom";
-import {UserType} from "../data/enums";
+import {UserType} from "../../data/enums";
 
 export const RegisterPage = () => {
     const [username, setUsername] = useState("");
@@ -50,7 +50,7 @@ export const RegisterPage = () => {
         if (image !== null) formData.append("image", image, image.name);
         else formData.append("image", "");
 
-        axiosPostImage.postForm("auth2/register/", formData).then((response) => {
+        axiosMultipart.postForm("auth2/register/", formData).then((response) => {
             if (response.status === 200) {
                 setSuccess(response.statusText);
             } else {

@@ -1,11 +1,11 @@
 import React, {ChildContextProvider, useContext, useEffect} from 'react';
 import {Button, Form} from 'react-bootstrap';
-import {axiosPost, DjangoCsrfToken, getCookie, getCsrfToken} from "../api/axios";
-import {MyAlert} from "../components/Alerts";
+import {axiosCsrf, DjangoCsrfToken, getCookie, getCsrfToken} from "../../api/axios";
+import {MyAlert} from "../../components/Alerts";
 import {useNavigate} from "react-router-dom";
-import {CEO, deserializeUser, Employee} from "../data/User";
-import useAuth from "../hooks/useAuth";
-import {UserType} from "../data/enums";
+import {CEO, deserializeUser, Employee} from "../../data/User";
+import useAuth from "../../hooks/useAuth";
+import {UserType} from "../../data/enums";
 
 export const LoginPage = () => {
     const [username, setUsername] = React.useState('');
@@ -26,7 +26,7 @@ export const LoginPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        axiosPost.post('auth2/login/', {username, password})
+        axiosCsrf.post('auth2/login/', {username, password})
             .then((response) => {
                 setSuccess(response.data.user.username + " successfully logged in!");
                 let jsonUser = response.data.user;

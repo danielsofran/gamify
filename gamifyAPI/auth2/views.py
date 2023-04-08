@@ -22,12 +22,7 @@ def login(request):
         except: pass
         if user is not None:
             auth.login(request, user)
-            if user.is_superuser:
-                return JsonResponse({'role': 'admin'}, status=200)
-            elif user.is_sef:
-                return JsonResponse({'role': 'sef'}, status=200)
-            else:
-                return JsonResponse({'role': 'angajat'}, status=200)
+            return JsonResponse({'status': 'ok', 'user': user.serialize()}, status=200)
         else:
             return JsonResponse({'error': "Invalid username/password"}, status=401)
     else:
@@ -56,8 +51,12 @@ def get_csrf(request):
 def register(request):
     if request.method == 'POST':
         username = request.POST['username']
+        if models.OwnUser.objects.filter(username=username).exists():
+            return JsonResponse({'error': "Username already exists"}, status=430)
         password = request.POST['password']
         email = request.POST['email']
+        if models.OwnUser.objects.filter(email=email).exists():
+            return JsonResponse({'error': "Email already exists"}, status=440)
         first_name = request.POST['first_name']
         last_name = request.POST['last_name']
         date_of_birth = request.POST['date_of_birth']
@@ -67,7 +66,9 @@ def register(request):
         register_request = models.RegisterRequest(username=username, password=password, email=email,
                           first_name=first_name, last_name=last_name, date_of_birth=date_of_birth, image=image)
         try: register_request.save()
-        except: return JsonResponse({'error': "Invalid data"}, status=400)
+        except Exception as ex:
+            print(ex)
+            return JsonResponse({'error': "Invalid data"}, status=420)
 
         return JsonResponse({'status': 'ok'}, status=200)
     else:
@@ -77,20 +78,39 @@ def register(request):
 def register_requests(request):
     if request.user.is_superuser:
         register_requests = models.RegisterRequest.objects.all()
-        return JsonResponse([register_request.serialize() for register_request in register_requests], status=200)
+        return JsonResponse([register_request.serialize() for register_request in register_requests], safe=False, status=200)
     else:
         return JsonResponse({'error': "Unauthorized"}, status=401)
 
 
-def accept_register_request(request):
+def get_request(request, id):
+    if request.user.is_superuser:
+        register_request_id = id
+        register_request = models.RegisterRequest.objects.get(id=register_request_id)
+        return JsonResponse(register_request.serialize(), status=200)
+    else:
+        return JsonResponse({'error': "Unauthorized"}, status=401)
+
+
+def save_register_request(request):
     if request.user.is_superuser:
         data = json.loads(request.body)
+        print(data)
+        register_request_id = data.get('register_request_id')
+        accepted = data.get('accepted')
+        if not accepted:
+            register_request = models.RegisterRequest.objects.get(id=register_request_id)
+            # email to user that the request was rejected
+            register_request.delete()
+            return JsonResponse({'status': 'deleted'}, status=200)
+
         salary = data.get('salary')
+        if salary is None or salary <= 0:
+            return JsonResponse({'error': "Invalid salary"}, status=400)
+
         position = data.get('position')
         date_employed = data.get('date_employed')
-
         tokens = data.get('tokens')
-        register_request_id = data.get('register_request_id')
 
         register_request = models.RegisterRequest.objects.get(id=register_request_id)
         employee = models.Employee(
@@ -113,9 +133,10 @@ def accept_register_request(request):
         try:
             employee.save()
             user.save()
-        except:
+        except Exception as ex:
+            print(ex)
             return JsonResponse({'error': "Invalid data"}, status=400)
 
         register_request.delete()
-        return JsonResponse({'status': 'ok'}, status=200)
+        return JsonResponse({'status': 'saved'}, status=200)
 

@@ -10,4 +10,6 @@ urlpatterns = [
     path('logout/', ensure_csrf_cookie(views.logout), name='logout'),
     path('register/', ensure_csrf_cookie(views.register), name='register'),
     path('register_requests/', views.register_requests, name='register_requests'),
+    path('get_register_request/<int:id>/', views.get_request, name='get_register_request'),
+    path('save_register_request/', ensure_csrf_cookie(views.save_register_request), name='accept_register_request'),
 ]

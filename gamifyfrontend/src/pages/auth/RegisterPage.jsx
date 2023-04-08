@@ -3,10 +3,10 @@ import {Button, Form} from "react-bootstrap";
 import {MyAlert} from "../components/Alerts";
 import {axiosPostImage, getCookie, getCsrfToken} from "../api/axios";
 import useAuth from "../hooks/useAuth";
-import {AuthResponse} from "../data/User";
+import {useNavigate} from "react-router-dom";
+import {UserType} from "../data/enums";
 
 export const RegisterPage = () => {
-    const { auth, setAuth } : AuthResponse = useAuth();
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [firstName, setFirstName] = useState("");
@@ -14,17 +14,24 @@ export const RegisterPage = () => {
     const [password, setPassword] = useState("");
     const [password2, setPassword2] = useState("");
     const [dateOfBirth, setDateOfBirth] = useState("");
-    const [image, setImage] = useState<File | null>(null);
+    const [image, setImage] = useState();
 
-    const formRef = React.createRef<HTMLFormElement>();
+    const { auth, setAuth } = useAuth();
+    const navigate = useNavigate();
+
+    const formRef = React.createRef();
     const [success, setSuccess] = useState("");
     const [error, setError] = useState("");
 
     useEffect(() => {
+        if(auth?.user !== null && auth?.user !== undefined && auth?.user.type !== undefined) {
+            if(auth.user.type === UserType.CEO) navigate("/ceo");
+            else if(auth.user.type === UserType.Employee) navigate("/employee");
+        }
         getCsrfToken();
     }, []);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if(password !== password2) {
@@ -139,7 +146,7 @@ export const RegisterPage = () => {
                         accept="image/*"
                         name="image"
                         required={false}
-                        onChange={(e:ChangeEvent<HTMLInputElement>) => setImage(e.target.files?.item(0) || null)}
+                        onChange={(e) => setImage(e.target.files?.item(0) || null)}
                     />
                 </Form.Group>
 

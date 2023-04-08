@@ -1,35 +1,43 @@
-import React, {ChildContextProvider, useEffect} from 'react';
+import React, {ChildContextProvider, useContext, useEffect} from 'react';
 import {Button, Form} from 'react-bootstrap';
 import {axiosPost, DjangoCsrfToken, getCookie, getCsrfToken} from "../api/axios";
 import {MyAlert} from "../components/Alerts";
 import {useNavigate} from "react-router-dom";
 import {CEO, deserializeUser, Employee} from "../data/User";
-import authProvider from "../context/AuthProvider";
 import useAuth from "../hooks/useAuth";
+import {UserType} from "../data/enums";
 
 export const LoginPage = () => {
-    const { setAuth } = useAuth();
     const [username, setUsername] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [success, setSuccess] = React.useState('');
     const [error, setError] = React.useState('');
 
+    const { auth, setAuth } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
+        if(auth.user !== null && auth.user !== undefined && auth.user.type !== undefined) {
+            if(auth.user.type === UserType.CEO) navigate("/ceo");
+            else if(auth.user.type === UserType.Employee) navigate("/employee");
+        }
         getCsrfToken();
-    }, [])
+    }, [auth.user])
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         axiosPost.post('auth2/login/', {username, password})
             .then((response) => {
-                setSuccess(response.data.role + " successfully logged in!");
+                setSuccess(response.data.user.username + " successfully logged in!");
                 let jsonUser = response.data.user;
-                let user: CEO|Employee = deserializeUser(jsonUser);
-                setAuth(user);
+                let user = deserializeUser(jsonUser);
+                let roles = [user.type]
+                console.warn(user, roles)
+                console.warn(auth, setAuth)
+                setAuth({user, roles});
+                console.info(auth)
             }).catch((error) => {
-                setError(error.response.data.error);
+                console.log(error);
             });
     }
 

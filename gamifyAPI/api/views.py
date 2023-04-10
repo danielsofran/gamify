@@ -1,9 +1,13 @@
+import datetime
 import json
 
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.utils import timezone
 
-from api import models
+from api import models, utils
+from auth2.utils import add_time_zone, get_current_time
+from gamifyAPI.settings import TIME_ZONE
 from api.models import QuestDifficulty
 
 
@@ -36,9 +40,14 @@ def add_quest(request):
 
         if user.is_employee:
             remaining_tokens = user.employee.tokens
-            tokens_quests_proposed = sum(quest.tokens*quest.max_winners for quest in models.Quest.objects.filter(author=user))
-            print(f"User {user.username} has {remaining_tokens} tokens, and has proposed {tokens_quests_proposed} tokens in quests")
+            quests = [quest for quest in models.Quest.objects.filter(author=user)]
+            tokens_quests_proposed = sum(quest.tokens*quest.max_winners for quest in quests)
+            tokens_already_paid = 0
+            for quest in quests:  # quests proposed by user
+                nr_solvers_quest = models.SolvedQuest.objects.filter(employee__id=user.employee.id).count()
+                tokens_already_paid += quest.tokens * nr_solvers_quest
             remaining_tokens -= tokens_quests_proposed
+            remaining_tokens += tokens_already_paid
             if tokens * max_winners > remaining_tokens:
                 return JsonResponse({'error': "Not enough tokens"}, status=420)
 
@@ -58,29 +67,90 @@ def add_quest(request):
         return JsonResponse({'status': 'ok'}, status=201)
     return JsonResponse({'error': "Wrong HTTP method"}, status=405)
 
+# Later TODO: check if the remaining tokens are greater
+#  than the intem purchased in the shop
 
 def quest(request, id):
-    if request.method == 'DELETE':
-        try:
-            quest = models.Quest.objects.get(id=id)
-        except:
-            return JsonResponse({'error': "Quest not found"}, status=404)
+    if request.method == 'DELETE':  # TODO: returneaza banii
+        try: quest = models.Quest.objects.get(id=id)
+        except: return JsonResponse({'error': "Quest not found"}, status=404)
         if not request.user.is_CEO or request.user != quest.author:
             return JsonResponse({'error': "User not authorized"}, status=401)
-        try:
-            quest.delete()
-        except:
-            return JsonResponse({'error': "Error deleting quest"}, status=500)
+
+        # returnez banii autorului
+        author = quest.author
+        solvers = models.SolvedQuest.objects.filter(quest__id=quest.id)
+        if not author.is_CEO:
+            author.employee.tokens += quest.tokens * solvers.count()
+            author.employee.save()
+        solvers.delete()
+
+        # delete the quest
+        try: quest.delete()
+        except: return JsonResponse({'error': "Error deleting quest"}, status=500)
         return JsonResponse({'status': 'ok'}, status=200)
     elif request.method == 'GET':
-        try:
-            quest = models.Quest.objects.get(id=id)
-        except:
-            return JsonResponse({'error': "Quest not found"}, status=404)
+        try: quest = models.Quest.objects.get(id=id)
+        except: return JsonResponse({'error': "Quest not found"}, status=404)
         data = quest.serialize()
-        no_solvers = models.SolvedQuest.objects.filter(quest__id=quest.id).count()
-        data['no_of_winners'] = no_solvers
+        solvers = models.SolvedQuest.objects.filter(quest__id=quest.id)
+        data['no_of_winners'] = solvers.count()
+        if not request.user.is_CEO:
+            # data['solved'] = False
+            # for solved_quest in solvers:
+            #     if solved_quest.employee.user.id == request.user.id:
+            #         data['solved'] = True
+            #         break
+            data['solved'] = True
+            try: solvers.get(employee__user__id=request.user.id)
+            except: data['solved'] = False
         return JsonResponse(data, status=200)
+    elif request.method == 'POST':
+        quest_id = request.POST['quest_id']
+        quest = models.Quest.objects.get(id=quest_id)
+        author = quest.author
+        employee = request.user.employee
+
+        # checks
+        if request.user.is_CEO:
+            return JsonResponse({'error': 'CEO can not attend quests'}, status=403)
+        if quest.author.id == request.user.id:
+            return JsonResponse({'error': 'Can not attend to own quest'}, status=403)
+        if timezone.now() > quest.datetime_end:
+            return JsonResponse({'error': 'Attended too late'}, status=403)
+        if not author.is_CEO and author.employee.tokens < quest.tokens:
+            print("TOKEN ERROR")
+            return JsonResponse({'error': 'Insufficient tokens'}, status=500)
+        solvers = models.SolvedQuest.objects.filter(quest__id=quest.id)
+        if solvers.count() >= quest.max_winners:
+            return JsonResponse({'error': 'Max number of winners reached!'}, status=400)
+        if solvers.filter(employee__id=request.user.employee.id).count() > 0:
+            return JsonResponse({'error': 'Quest already solved!'}, status=401)
+
+        # update tokens of author and winner
+        if not author.is_CEO:
+            author.employee.tokens -= quest.tokens
+            author.employee.save()
+        employee.tokens += quest.tokens
+        employee.save()
+
+        # create solved quest object
+        try: solved_quest=models.SolvedQuest.objects.create(quest=quest, employee=employee)
+        except Exception as ex:
+            print(ex)
+            return JsonResponse({'error': "Can not create solved quest"}, status=401)
+
+        # update badges
+        utils.update_badges(employee)
+
+        # save proofs
+        for image_name in request.FILES:
+            image = request.FILES[image_name]
+            try: models.Image.objects.create(solved_quest=solved_quest, image=image)
+            except Exception as ex:
+                print(ex)
+                return JsonResponse({'error': "Can not save image "+image_name}, status=401)
+        return JsonResponse({'status': 'ok'}, status=201)
     return JsonResponse({'error': "Wrong HTTP method"}, status=405)
 
 
@@ -90,8 +160,11 @@ def get_quests(request):
     quests = []
     for quest in models.Quest.objects.all():
         data = quest.serialize()
-        no_solvers = models.SolvedQuest.objects.filter(quest__id=quest.id).count()
-        data['no_of_winners'] = no_solvers
+        solvers = models.SolvedQuest.objects.filter(quest__id=quest.id)
+        data['no_of_winners'] = solvers.count()
+        data['solved'] = True
+        try: solvers.get(employee__user__id=request.user.id)
+        except: data['solved'] = False
         quests.append(data)
     return JsonResponse(quests, safe=False, status=200)
 
@@ -99,6 +172,16 @@ def get_quests(request):
 def get_quest_solvers(request, id: int):
     if request.method != 'GET':
         return JsonResponse({'error': "Wrong HTTP method"}, status=405)
-    solvers = models.SolvedQuest.objects.filter(quest__id=id)
+    solvers = models.SolvedQuest.objects.filter(quest__id=id).order_by('date_solved')
     solvers = [solver.employee.user.serialize() for solver in solvers]
     return JsonResponse(solvers, safe=False, status=200)
+
+
+def leaderboard(request):  # all employees in the order of points
+    rez = []
+    for employee in models.Employee.objects.all():
+        points = utils.employee_points(employee)
+        data = {'employee': employee.user.serialize(), 'points': points}
+        rez.append(data)
+    rez.sort(key=lambda x: x['points'], reverse=True)
+    return JsonResponse(rez, safe=False, status=200)

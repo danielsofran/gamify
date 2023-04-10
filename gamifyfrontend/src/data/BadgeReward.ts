@@ -4,7 +4,7 @@ export class BadgeReward {
     description: string = "";
     image: string = "";
 
-    deserialize(input: any): BadgeReward {
+    static deserialize(input: any): BadgeReward {
         return Object.assign(this, input);
     }
 }

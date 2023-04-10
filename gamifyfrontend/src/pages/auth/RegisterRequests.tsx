@@ -48,7 +48,7 @@ export const RegisterRequests = () => {
                                 <td>{request.first_name}</td>
                                 <td>{request.email}</td>
                                 <td>{request.date_of_birth.toString()}</td>
-                                <td><img style={{width: 50, height: "auto", textAlign: "center"}} src={API_URL+request.image}/></td>
+                                <td><img style={{width: 100, height: "auto", textAlign: "center"}} src={API_URL+request.image}/></td>
                                 <td><Button variant="info" onClick={() => viewRequest(request.id)}>Vizualizeaza</Button> </td>
                             </tr>
                         )

@@ -6,7 +6,8 @@ from django.contrib.auth.decorators import user_passes_test
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.middleware.csrf import get_token
-from django.views.decorators.csrf import ensure_csrf_cookie
+
+
 
 from . import models
 
@@ -95,7 +96,6 @@ def get_request(request, id):
 def save_register_request(request):
     if request.user.is_superuser:
         data = json.loads(request.body)
-        print(data)
         register_request_id = data.get('register_request_id')
         accepted = data.get('accepted')
         if not accepted:
@@ -130,6 +130,7 @@ def save_register_request(request):
             image=register_request.image,
             employee=employee,
         )
+        employee.user = user
         try:
             employee.save()
             user.save()

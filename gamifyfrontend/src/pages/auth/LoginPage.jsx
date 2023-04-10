@@ -22,7 +22,7 @@ export const LoginPage = () => {
             else if(auth.user.type === UserType.Employee) navigate("/employee");
         }
         getCsrfToken();
-    }, [auth.user])
+    }, [])
 
     const handleSubmit = async (e) => {
         e.preventDefault();

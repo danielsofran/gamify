@@ -144,7 +144,7 @@ export const ViewRegisterRequest:React.FC<{request?: RegisterRequest}> = ({reque
 
                 <Form.Group controlId="formBasicImage">
                     <Form.Label>Profile picture</Form.Label><br/>
-                    <img src={API_URL + employee.image} alt="Profile picture" width="50" height="50"/>
+                    <img src={API_URL + employee.image} alt="Profile picture" width="100" height="auto"/>
                 </Form.Group>
 
                 <Form.Group controlId="formBasicSalary">

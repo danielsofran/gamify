@@ -17,8 +17,8 @@ TOKEN_TO_ADVANCE_TO = {  # aditional tokens needed to advance to a position
 
 TOKEN_FREE_DAY_PERCENTAGE = 1  # 1 free day = .days_requested * (salary_per_day * TOKEN_TO_MONEY_RATIO) * TOKEN_FREE_DAY_PERCENTAGE
 
-TOKEN_MINIMUM_PER_DIFFICULTY = {
-    'E': 50,
-    'M': 100,
-    'H': 200,
+TOKEN_POINTS = {
+    'E': 10,
+    'M': 20,
+    'H': 40,
 }

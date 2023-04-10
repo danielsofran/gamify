@@ -1,6 +1,4 @@
-import abc
 import datetime
-from abc import ABC
 
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
@@ -13,6 +11,10 @@ class Badge(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=1000)
     image = models.ImageField(upload_to='media/')
+    min_quests = models.PositiveIntegerField(default=1)
+    min_easy_quests = models.PositiveIntegerField(default=1)
+    min_medium_quests = models.PositiveIntegerField(default=0)
+    min_hard_quests = models.PositiveIntegerField(default=0)
 
     def serialize(self):
         return {
@@ -46,6 +48,10 @@ class Quest(models.Model):
     max_winners = models.PositiveIntegerField(default=1)
     tokens = models.PositiveIntegerField(default=0)
 
+    @property
+    def points(self):
+        return settings.TOKEN_POINTS[self.difficulty]
+
     def serialize(self):
         return {
             'id': self.id,
@@ -65,6 +71,10 @@ class SolvedQuest(models.Model):
     quest = models.ForeignKey(Quest, on_delete=models.CASCADE)
     date_solved = models.DateField(auto_now_add=True)
 
+    @property
+    def points(self):
+        return self.quest.points
+
     def serialize(self):
         return {
             'id': self.id,
@@ -78,18 +88,14 @@ class SolvedQuest(models.Model):
 
 
 class Image(models.Model):
-    posted_by = models.ForeignKey(OwnUser, on_delete=models.CASCADE, related_name='images')
     solved_quest = models.ForeignKey(SolvedQuest, on_delete=models.CASCADE)
-    datetime_posted = models.DateTimeField(auto_now_add=True)
     image = models.ImageField(upload_to='media/')
 
     def serialize(self):
         return {
+            'solved_quest_id': self.solved_quest.id,
             'image': self.image.url,
         }
-
-    class Meta:
-        unique_together = ('posted_by', 'solved_quest')
 
 
 class Status(models.TextChoices):

@@ -35,7 +35,7 @@ class QuestDifficulty(models.TextChoices):
 
     @property
     def tokens(self):
-        return settings.TOKEN_MINIMUM_PER_DIFFICULTY[self]
+        return settings.TOKEN_POINTS[self]
 
 
 class Quest(models.Model):

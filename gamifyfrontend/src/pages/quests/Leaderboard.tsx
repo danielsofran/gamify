@@ -1,4 +1,4 @@
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import {deserializeUser, Employee} from "../../data/User";
 import {useEffect, useState} from "react";
 import {axiosJson} from "../../api/axios";
@@ -8,6 +8,8 @@ import {EmployeePoints} from "../../data/Quests";
 export const Leaderboard = (props: {rewardable: boolean}) => {
     const [employees, setEmployees] = useState<EmployeePoints[]>([]);
     const [error, setError] = useState<string>("");
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         axiosJson.get(`api/leaderboard/`).then((response) => {
@@ -47,6 +49,7 @@ export const Leaderboard = (props: {rewardable: boolean}) => {
                         <th>Last Name</th>
                         <th>Points</th>
                         <th>Place</th>
+                        {props.rewardable && <th>Reward</th>}
                     </tr>
                 </thead>
                 <tbody>
@@ -58,6 +61,7 @@ export const Leaderboard = (props: {rewardable: boolean}) => {
                                 <td>{employee.employee.last_name}</td>
                                 <td>{employee.points}</td>
                                 <td>{index+1}</td>
+                                {props.rewardable && <td><button className="btn btn-primary" onClick={() => navigate(`/reward/${employee.employee.id}/`)}>Reward</button></td>}
                             </tr>
                         )
                     }

@@ -185,3 +185,37 @@ def leaderboard(request):  # all employees in the order of points
         rez.append(data)
     rez.sort(key=lambda x: x['points'], reverse=True)
     return JsonResponse(rez, safe=False, status=200)
+
+
+def reward(request, id):
+    if request.method == 'POST':
+        if not request.user.is_CEO:
+            return JsonResponse({'error', "Unauthorized"}, status=403)
+        try: employee = models.OwnUser.objects.get(id=id).employee
+        except: return JsonResponse({'error': "The employee does not exist"})
+        tokens = json.loads(request.body).get('tokens')
+
+        employee.tokens += tokens
+        try: employee.save()
+        except: return JsonResponse({'error': "Tokens can not be added"}, status=500)
+
+        return JsonResponse({'status': 'ok'}, status=201)
+    return JsonResponse({'error', 'Wrong HTTP method'}, status=405)
+
+
+def get_tokens(request, type: int):
+    if request.method == "GET":
+        if request.user.is_CEO:
+            return JsonResponse({'error': 'CEO does not need to calculate tokens'}, status=403)
+        employee = request.user.employee
+        fixed_amount = int(request.GET['fixed_amount'])
+        percentage = int(request.GET['percentage'])
+        if type == 0:  # Salary increase
+            req = models.SalaryIncreaseRequest(
+                user=request.user,
+                fixed_amount=fixed_amount,
+                percentage=percentage
+            )
+            return JsonResponse({'tokens': req.tokens}, status=200)
+        return JsonResponse({'error': 'Wrong request type'}, status=400)
+    return JsonResponse({'error': 'Wrong HTTP method'}, status=405)

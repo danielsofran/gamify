@@ -25,10 +25,16 @@ export enum QuestStatus {
     FINISHED = 2,
 }
 
-export enum Status {
+export enum RequestStatus {
     PENDING = 'P',
     ACCEPTED = 'A',
     REJECTED = 'R',
+}
+
+export enum RequestType {
+    SALARY_INCREASE = 0,
+    FREE_DAYS = 1,
+    CAREER_DEVELOPMENT = 2,
 }
 
 export const QuestDifficultyMap = new Map<QuestDifficulty, string>([
@@ -49,4 +55,16 @@ export const PositionMap = new Map<Position, string>([
 export const UserTypeMap = new Map<UserType, string>([
     [UserType.Employee, 'Employee'],
     [UserType.CEO, 'CEO'],
+]);
+
+export const RequestStatusMap = new Map<RequestStatus, string>([
+    [RequestStatus.PENDING, 'Pending'],
+    [RequestStatus.ACCEPTED, 'Accepted'],
+    [RequestStatus.REJECTED, 'Rejected'],
+]);
+
+export const RequestTypeMap = new Map<RequestType, string>([
+    [RequestType.SALARY_INCREASE, 'Salary increase'],
+    [RequestType.FREE_DAYS, 'Free days'],
+    [RequestType.CAREER_DEVELOPMENT, 'Career development'],
 ]);

@@ -45,6 +45,16 @@ def user(request):
         return JsonResponse({}, status=401)
 
 
+def employee(request, id):
+    if request.method == 'GET':
+        if request.user.is_CEO:
+            try: employee = models.OwnUser.objects.get(id=id)
+            except: return JsonResponse({'error', 'Employee does not exist'}, status=400)
+            return JsonResponse(employee.serialize(), status=200)
+        return JsonResponse({'error', 'Unauthorized'}, status=403)
+    return JsonResponse({'error': 'Wrong HTTP method'}, status=405)
+
+
 def get_csrf(request):
     return JsonResponse({'csrfToken': get_token(request)})
 

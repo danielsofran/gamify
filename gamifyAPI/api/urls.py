@@ -11,5 +11,8 @@ urlpatterns = [
     path('quest/<int:id>/',ensure_csrf_cookie(views.quest), name='quest'),
     path('quest/<int:id>/winners/', views.get_quest_solvers, name='get_quest_solvers'),
     path('leaderboard/', views.leaderboard, name='leaderboard'),
+    path('reward/<int:id>/', ensure_csrf_cookie(views.reward), name='reward'),
+    path('get_tokens/<int:type>/', views.get_tokens, name='get_tokens'),
 ]
+
 

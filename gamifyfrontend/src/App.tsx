@@ -3,7 +3,7 @@ import {Navigate, Route, Routes} from "react-router-dom";
 import Layout from "./context/Layout";
 import Unauthorized from "./pages/auth/Unauthorized";
 import RequireAuth from "./context/RequireAtuh";
-import {UserType} from "./data/enums";
+import {RequestType, UserType} from "./data/enums";
 import {LoginPage} from "./pages/auth/LoginPage";
 import {RegisterPage} from "./pages/auth/RegisterPage";
 import {logout} from "./api/utils";
@@ -15,6 +15,11 @@ import {AttendQuest} from "./pages/quests/AttendQuest";
 import {QuestWinners} from "./pages/quests/QuestWinners";
 import {Profile} from "./pages/auth/Profile";
 import {Leaderboard} from "./pages/quests/Leaderboard";
+import {Reward} from "./pages/quests/Reward";
+import {Requests} from "./pages/shop/Requests";
+import {AddSalaryIncreaseRequest} from "./pages/shop/AddSalaryIncreaseRequest";
+import {AddFreeDaysRequest} from "./pages/shop/AddFreeDaysRequest";
+import {AddCareerDevelopmentRequest} from "./pages/shop/AddCareerDevelopmentRequest";
 
 function App() {
   return (
@@ -33,6 +38,14 @@ function App() {
             <Route path='employee/quests/:questId/attend/' element={<AttendQuest />} />
             <Route path='employee/quests/:questId/winners/' element={<QuestWinners rewardable={false} />} />
             <Route path='employee/leaderboard/' element={<Leaderboard rewardable={false} />}/>
+
+            <Route path='employee/requests/salary-increase/' element={<Requests own={true} type={RequestType.SALARY_INCREASE}/>} />
+            <Route path='employee/requests/free-days/' element={<Requests own={true} type={RequestType.FREE_DAYS}/>} />
+            <Route path='employee/requests/career-development/' element={<Requests own={true} type={RequestType.CAREER_DEVELOPMENT}/>} />
+
+            <Route path='employee/shop/salary-increase/' element={<AddSalaryIncreaseRequest />} />
+            <Route path='employee/shop/free-days/' element={<AddFreeDaysRequest />} />
+            <Route path='employee/shop/career-development/' element={<AddCareerDevelopmentRequest />} />
           </Route>
 
           {/*ceo routes*/}
@@ -43,6 +56,11 @@ function App() {
             <Route path='ceo/quests/' element={<Quests editable={true} />} />
             <Route path='ceo/quests/:questId/winners/' element={<QuestWinners rewardable={true} />} />
             <Route path='ceo/leaderboard/' element={<Leaderboard rewardable={true} />}/>
+            <Route path='/reward/:id/' element={<Reward />} />
+
+            <Route path='ceo/requests/salary-increase/' element={<Requests own={false} type={RequestType.SALARY_INCREASE}/>} />
+            <Route path='ceo/requests/free-days/' element={<Requests own={false} type={RequestType.FREE_DAYS}/>} />
+            <Route path='ceo/requests/career-development/' element={<Requests own={false} type={RequestType.CAREER_DEVELOPMENT}/>} />
           </Route>
 
           {/*common routes*/}

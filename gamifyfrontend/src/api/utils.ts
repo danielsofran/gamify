@@ -23,3 +23,7 @@ export const convertDateTimeToField = (date: Date) => {
 export const showDateTime = (date: Date) => {
     return convertDateTimeToField(new Date(date)).replace('T', ' ');
 }
+
+export const showDate = (date: Date) => {
+    return showDateTime(new Date(date)).slice(0, 10);
+}

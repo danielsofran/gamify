@@ -10,8 +10,12 @@ export const CeoNavbar : React.FC = () => {
         <MyNavbar>
             <Nav.Link href="/ceo/quests">Quests</Nav.Link>
             <Nav.Link href="/ceo/register_requests">Register Requests</Nav.Link>
+            <NavDropdown title="Requests" id="basic-nav-dropdown">
+                <NavDropdown.Item href="/ceo/requests/salary-increase">Salary increase requests </NavDropdown.Item>
+                <NavDropdown.Item href="/ceo/requests/free-days">Free days requests</NavDropdown.Item>
+                <NavDropdown.Item href="/ceo/requests/career-development">Career development requests</NavDropdown.Item>
+            </NavDropdown>
             <Nav.Link href="/ceo/leaderboard">Leaderboard</Nav.Link>
-
             <Nav.Link href="/profile">Profile</Nav.Link>
             <Nav.Link onClick={() => logout()}> Logout </Nav.Link>
         </MyNavbar>

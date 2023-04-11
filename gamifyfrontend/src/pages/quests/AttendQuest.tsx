@@ -26,6 +26,10 @@ export const AttendQuest = () => {
                 console.log("Error");
                 console.log(response);
             }
+        }).catch((error) => {
+            setError("Error loading quest!");
+            console.log("Error");
+            console.log(error);
         });
     }, [])
 
@@ -54,6 +58,10 @@ export const AttendQuest = () => {
                 console.log("Error");
                 console.log(response);
             }
+        }).catch((error) => {
+            setError(error.textMessage);
+            console.log("Error");
+            console.log(error);
         });
     }
 

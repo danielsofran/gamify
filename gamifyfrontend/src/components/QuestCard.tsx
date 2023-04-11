@@ -74,7 +74,8 @@ export const QuestCard = (props: { editable: boolean, quest: Quest }) => {
     }
 
     const showAtttend = ():boolean =>
-        state === QuestStatus.IN_PROGRESS && !props.editable && [undefined, false].includes(props.quest.solved)
+        state === QuestStatus.IN_PROGRESS && !props.editable && [undefined, false].includes(props.quest.solved) &&
+        props.quest.no_of_winners < props.quest.max_winners && new Date() <= new Date(props.quest.datetime_end);
 
 
     return (

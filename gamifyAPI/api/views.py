@@ -5,11 +5,12 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
 
-from api import models, utils
+from api import models, utils, settings
 from auth2.utils import add_time_zone, get_current_time
 from gamifyAPI.settings import TIME_ZONE
 from api.models import QuestDifficulty
 
+# TODO: diferit de 0 la requesturi
 
 # Create your views here.
 def add_quest(request):
@@ -74,7 +75,7 @@ def quest(request, id):
     if request.method == 'DELETE':
         try: quest = models.Quest.objects.get(id=id)
         except: return JsonResponse({'error': "Quest not found"}, status=404)
-        if not request.user.is_CEO or request.user != quest.author:
+        if not request.user.is_CEO and request.user.id != quest.author.id:
             return JsonResponse({'error': "User not authorized"}, status=401)
 
         # returnez banii autorului
@@ -207,7 +208,7 @@ def get_tokens(request, type: int):
     if request.method == "GET":
         if request.user.is_CEO:
             return JsonResponse({'error': 'CEO does not need to calculate tokens'}, status=403)
-        if type == 0:  # Salary increase
+        if type == models.RewardType.SALARY_INCREASE:
             fixed_amount = int(request.GET['fixed_amount'])
             percentage = int(request.GET['percentage'])
             req = models.SalaryIncreaseRequest(
@@ -216,14 +217,12 @@ def get_tokens(request, type: int):
                 percentage=percentage
             )
             return JsonResponse({'tokens': req.tokens}, status=200)
-        elif type == 1:  # Free days
+        elif type == models.RewardType.FREE_DAYS:
             datetime_start = str(request.GET['datetime_free_days_start'])
             datetime_end = str(request.GET['datetime_free_days_end'])
             try:
                 datetime_start = datetime.datetime.fromisoformat(datetime_start)
                 datetime_end = datetime.datetime.fromisoformat(datetime_end)
-                # datetime_start = datetime.datetime.strptime(request.GET['date_free_days_start'], '%Y-%m-%dT%H:%M:%S.%fZ')
-                # datetime_end = datetime.datetime.strptime(request.GET['date_free_days_end'], '%Y-%m-%dT%H:%M:%S.%fZ')
             except Exception as ex:
                 print(ex)
                 return JsonResponse({'error': 'Wrong dates'}, status=400)
@@ -235,7 +234,7 @@ def get_tokens(request, type: int):
                 date_free_days_end=datetime_end,
             )
             return JsonResponse({'tokens': req.tokens}, status=200)
-        elif type == 2:  # Career development
+        elif type == models.RewardType.CAREER_DEVELOPMENT:
             try: position = models.EmployeePosition(int(request.GET['position']))
             except Exception as ex:
                 print(ex)
@@ -372,30 +371,70 @@ def process_request(request, type: int, id: int):
         try: req = utils.get_request(type, id)
         except ValueError as e:
             return JsonResponse({'error': str(e)}, status=400)
-        if req.status != models.Status.PENDING:
-            return JsonResponse({'error': 'Request is not pending'}, status=400)
-        req.status = models.Status.ACCEPTED
+        if req.state != models.RequestStatus.PENDING:
+            return JsonResponse({'error': 'Request is not pending'}, state=400)
+        req.state = models.RequestStatus.ACCEPTED
         try: req.save()
         except Exception as ex:
             print(ex)
             return JsonResponse({'error': 'Can not save request'}, status=500)
-        if type == 0:  # Salary increase
+        if type == models.RewardType.SALARY_INCREASE:
             employee = req.user.employee
             employee.salary += req.salary_increase
             try: employee.save()
             except Exception as ex:
                 print(ex)
-                req.status = models.Status.PENDING
+                req.state = models.RequestStatus.PENDING
                 req.save()
                 return JsonResponse({'error': 'Can not update employee salary'}, status=500)
-        elif type == 2:  # Career development
+        elif type == models.RewardType.CAREER_DEVELOPMENT:  # Career development
             employee = req.user.employee
             employee.position = req.position_requested
             try: employee.save()
             except Exception as ex:
                 print(ex)
-                req.status = models.RequestStatus.PENDING
+                req.state = models.RequestStatus.PENDING
                 req.save()
                 return JsonResponse({'error': 'Can not update employee position'}, status=500)
+        return JsonResponse({'status': 'ok'}, status=200)
+    elif request.method == "DELETE":
+        try: req = utils.get_request(type, id)
+        except ValueError as e:
+            return JsonResponse({'error': str(e)}, status=400)
+        if req.state != models.RequestStatus.PENDING:
+            return JsonResponse({'error': 'Request is not pending'}, status=400)
+        if not request.user.is_CEO:
+            if req.user.id != request.user.id:
+                return JsonResponse({'error': 'You can\'t withdraw the requests of other employees'}, status=403)
+            tokens = req.tokens
+            employee = req.user.employee
+            employee.tokens += tokens
+            try: employee.save()
+            except Exception as ex:
+                print(ex)
+                return JsonResponse({'error': 'Can not update employee tokens'}, status=500)
+            try: req.delete()
+            except Exception as ex:
+                print(ex)
+                employee.tokens -= tokens
+                employee.save()
+                return JsonResponse({'error': 'Can not delete request'}, status=500)
+            return JsonResponse({'status': 'ok'}, status=200)
+        elif request.user.is_CEO:
+            req.state = models.RequestStatus.REJECTED
+            tokens = req.tokens
+            employee = req.user.employee
+            employee.tokens += round(tokens * settings.TOKENS_BACK_AFTER_REJECTION)
+            try: employee.save()
+            except Exception as ex:
+                print(ex)
+                return JsonResponse({'error': 'Can not update employee tokens'}, status=500)
+            try: req.save()
+            except Exception as ex:
+                print(ex)
+                employee.tokens -= round(tokens * settings.TOKENS_BACK_AFTER_REJECTION)
+                employee.save()
+                return JsonResponse({'error': 'Can not save request'}, status=500)
+            return JsonResponse({'status': 'ok'}, status=200)
         return JsonResponse({'status': 'ok'}, status=200)
     return JsonResponse({'error': 'Wrong HTTP method'}, status=405)

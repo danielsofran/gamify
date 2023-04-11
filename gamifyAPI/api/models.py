@@ -98,17 +98,23 @@ class Image(models.Model):
         }
 
 
-class Status(models.TextChoices):
+class RequestStatus(models.TextChoices):
     PENDING = 'P', 'Pending'
     ACCEPTED = 'A', 'Accepted'
     REJECTED = 'R', 'Rejected'
+
+
+class RewardType(models.IntegerChoices):
+    SALARY_INCREASE = 0, 'Salary Increase'
+    FREE_DAYS = 1, 'Free Days'
+    CAREER_DEVELOPMENT = 2, 'Career Development'
 
 
 class RewardRequest(models.Model):
     user = models.ForeignKey(OwnUser, on_delete=models.CASCADE)
     description = models.CharField(max_length=1000)
     datetime_requested = models.DateTimeField(auto_now_add=True)
-    state = models.CharField(max_length=1, choices=Status.choices, default=Status.PENDING)
+    state = models.CharField(max_length=1, choices=RequestStatus.choices, default=RequestStatus.PENDING)
 
     @property
     def tokens(self) -> int:

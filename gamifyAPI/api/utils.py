@@ -41,10 +41,9 @@ def employee_points(employee: models.Employee):
 
 
 def get_requests(type: int, user: models.OwnUser):
-    model = None
-    if type == 0: model = models.SalaryIncreaseRequest
-    elif type == 1: model = models.FreeDaysRequest
-    elif type == 2: model = models.CareerDevelopmentRequest
+    if type == models.RewardType.SALARY_INCREASE: model = models.SalaryIncreaseRequest
+    elif type == models.RewardType.FREE_DAYS: model = models.FreeDaysRequest
+    elif type == models.RewardType.CAREER_DEVELOPMENT: model = models.CareerDevelopmentRequest
     else: raise ValueError('Invalid request type')
 
     if user.is_employee: return model.objects.filter(user__id=user.id)
@@ -53,9 +52,9 @@ def get_requests(type: int, user: models.OwnUser):
 
 
 def get_request(type: int, id: int):
-    if type == 0: model = models.SalaryIncreaseRequest
-    elif type == 1: model = models.FreeDaysRequest
-    elif type == 2: model = models.CareerDevelopmentRequest
+    if type == models.RewardType.SALARY_INCREASE: model = models.SalaryIncreaseRequest
+    elif type == models.RewardType.FREE_DAYS: model = models.FreeDaysRequest
+    elif type == models.RewardType.CAREER_DEVELOPMENT: model = models.CareerDevelopmentRequest
     else: raise ValueError('Invalid request type')
 
     try: return model.objects.get(id=id)

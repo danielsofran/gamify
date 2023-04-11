@@ -1,16 +1,31 @@
 import {Button, Card, Container, ListGroup} from "react-bootstrap";
 import {CareerDevelopmentRequest, FreeDaysRequest, SalaryIncreaseRequest} from "../data/Requests";
-import {Position, PositionMap, RequestStatus, RequestStatusMap, RequestTypeMap} from "../data/enums";
+import {Position, PositionMap, RequestStatus, RequestStatusMap, RequestType, RequestTypeMap} from "../data/enums";
 import {showDate, showDateTime} from "../api/utils";
+import {axiosCsrf} from "../api/axios";
 
 export const CareerDevelopmentRequestCard = (props : {own: boolean, request: CareerDevelopmentRequest}) => {
 
     const acceptRequest = () => {
-
+        axiosCsrf.post(`api/request/${RequestType.CAREER_DEVELOPMENT}/${props.request.id}/`).then((response) => {
+            if(response.status === 200) {
+                console.log("Accepted request")
+                window.location.reload();
+            }
+        }).catch((error) => {
+            console.warn(error);
+        });
     }
 
     const rejectRequest = () => {
-
+        axiosCsrf.delete(`api/request/${RequestType.CAREER_DEVELOPMENT}/${props.request.id}/`).then((response) => {
+            if(response.status === 200) {
+                console.log("Rejected request")
+                window.location.reload();
+            }
+        }).catch((error) => {
+            console.warn(error);
+        });
     }
 
     return (

@@ -140,7 +140,7 @@ def save_register_request(request):
             image=register_request.image,
             employee=employee,
         )
-        employee.user = user
+
         try:
             employee.save()
             user.save()
@@ -148,6 +148,12 @@ def save_register_request(request):
             print(ex)
             return JsonResponse({'error': "Invalid data"}, status=400)
 
+        try:
+            employee.user = user
+            employee.save()
+        except Exception as ex:
+            print(ex)
+            return JsonResponse({'error': "Can not save employee"}, status=400)
         register_request.delete()
         return JsonResponse({'status': 'saved'}, status=200)
 

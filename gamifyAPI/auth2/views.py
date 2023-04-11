@@ -6,14 +6,17 @@ from django.contrib.auth.decorators import user_passes_test
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.middleware.csrf import get_token
-
-
-
 from . import models
 
 
-# Create your views here.
 def login(request):
+    """
+    login user
+    :param request:
+    :status 200: ok
+    :status 401: invalid username/password
+    :status 405: wrong HTTP method, POST expected
+    """
     if request.method == 'POST':
         data = json.loads(request.body)
         username = data.get('username')
@@ -31,6 +34,14 @@ def login(request):
 
 
 def logout(request):
+    """
+    logout user
+    :param request:
+    :return:
+    :status 200: ok
+    :status 401: user not logged in
+    :status 500: logout server error
+    """
     if not request.user.is_authenticated:
         return JsonResponse({'error': "User not logged in"}, status=401)
     try: auth.logout(request)
@@ -39,6 +50,13 @@ def logout(request):
 
 
 def user(request):
+    """
+    get user info for logged user
+    :param request:
+    :return: the serialized user
+    :status 200: ok
+    :status 401: user not logged in
+    """
     if request.user.is_authenticated:
         return JsonResponse(request.user.serialize(), status=200)
     else:
@@ -46,6 +64,16 @@ def user(request):
 
 
 def employee(request, id):
+    """
+    get user info for employee with id
+    :param request:
+    :param id: the id of the employee
+    :return: the serialized employee, if the user is an employee
+    :status 200: ok
+    :status 400: employee does not exist
+    :status 403: unauthorized
+    :status 405: wrong HTTP method, GET expected
+    """
     if request.method == 'GET':
         if request.user.is_CEO:
             try: employee = models.OwnUser.objects.get(id=id)
@@ -56,10 +84,25 @@ def employee(request, id):
 
 
 def get_csrf(request):
+    """
+    get csrf token
+    :param request:
+    :return: the csrf token
+    """
     return JsonResponse({'csrfToken': get_token(request)})
 
 
 def register(request):
+    """
+    create a register request
+    :param request:
+    :return:, if the request was created, otherwise an error
+    :status 200: ok
+    :status 405: wrong HTTP method, POST expected
+    :status 420: invalid data
+    :status 430: username already exists
+    :status 440: email already exists
+    """
     if request.method == 'POST':
         username = request.POST['username']
         if models.OwnUser.objects.filter(username=username).exists():
@@ -87,6 +130,13 @@ def register(request):
 
 
 def register_requests(request):
+    """
+    get all register requests, if the user is CEO
+    :param request:
+    :return: an array of serialized register requests
+    :status 200: ok
+    :status 401: unauthorized
+    """
     if request.user.is_superuser:
         register_requests = models.RegisterRequest.objects.all()
         return JsonResponse([register_request.serialize() for register_request in register_requests], safe=False, status=200)
@@ -95,6 +145,14 @@ def register_requests(request):
 
 
 def get_request(request, id):
+    """
+    get a register request, if the user is CEO
+    :param request:
+    :param id: the id of the register request
+    :return: the serialized register request
+    :status 200: ok
+    :status 401: unauthorized
+    """
     if request.user.is_superuser:
         register_request_id = id
         register_request = models.RegisterRequest.objects.get(id=register_request_id)
@@ -104,6 +162,15 @@ def get_request(request, id):
 
 
 def save_register_request(request):
+    """
+    save a register request, if the user is CEO
+    :param request:
+    :return:, if the request was saved, otherwise an error
+    :status 200: ok
+    :status 400: invalid data
+    :status 401: unauthorized
+    :status 405: wrong HTTP method, POST expected
+    """
     if request.user.is_superuser:
         data = json.loads(request.body)
         register_request_id = data.get('register_request_id')

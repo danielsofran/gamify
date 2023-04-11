@@ -10,10 +10,19 @@ from auth2.utils import add_time_zone, get_current_time
 from gamifyAPI.settings import TIME_ZONE
 from api.models import QuestDifficulty
 
-# TODO: diferit de 0 la requesturi
 
 # Create your views here.
 def add_quest(request):
+    """
+    add a quest
+    :param request: 
+    :return:
+    :status 201: ok, created
+    :status 400: validation error
+    :status 420: not enough tokens
+    :status 500: server error
+    :status 405: wrong HTTP method, POST expected
+    """
     if request.method == 'POST':
         user = request.user
         data = json.loads(request.body)
@@ -40,16 +49,17 @@ def add_quest(request):
             return JsonResponse({'error': "Wrong tokens"}, status=400)
 
         if user.is_employee:
-            remaining_tokens = user.employee.tokens
-            quests = [quest for quest in models.Quest.objects.filter(author=user)]
-            tokens_quests_proposed = sum(quest.tokens*quest.max_winners for quest in quests)
-            tokens_already_paid = 0
-            for quest in quests:  # quests proposed by user
-                nr_solvers_quest = models.SolvedQuest.objects.filter(employee__id=user.employee.id).count()
-                tokens_already_paid += quest.tokens * nr_solvers_quest
-            remaining_tokens -= tokens_quests_proposed
-            remaining_tokens += tokens_already_paid
-            if tokens * max_winners > remaining_tokens:
+            # remaining_tokens = user.employee.tokens
+            # quests = [quest for quest in models.Quest.objects.filter(author=user)]
+            # tokens_quests_proposed = sum(quest.tokens*quest.max_winners for quest in quests)
+            # tokens_already_paid = 0
+            # for quest in quests:  # quests proposed by user
+            #     nr_solvers_quest = models.SolvedQuest.objects.filter(employee__id=user.employee.id).count()
+            #     tokens_already_paid += quest.tokens * nr_solvers_quest
+            # remaining_tokens -= tokens_quests_proposed
+            # remaining_tokens += tokens_already_paid
+            # if tokens * max_winners > remaining_tokens:
+            if utils.remaining_tokens(user.employee) < tokens * max_winners:
                 return JsonResponse({'error': "Not enough tokens"}, status=420)
 
         try:
@@ -68,10 +78,24 @@ def add_quest(request):
         return JsonResponse({'status': 'ok'}, status=201)
     return JsonResponse({'error': "Wrong HTTP method"}, status=405)
 
-# Later TODO: check if the remaining tokens are greater
-#  than the intem purchased in the shop
 
 def quest(request, id):
+    """
+    method GET: get quest details
+    method DELETE: delete quest, and return tokens to author
+    method POST: solve quest
+    :param request: 
+    :param id: the quest id
+    :return: or error, or quest details, respectively
+    :status 200: ok, quest details
+    :status 201: ok, solved quest
+    :status 204: ok, deleted
+    :status 401: user not authorized / quest already solved
+    :status 404: quest not found
+    :status 405: wrong HTTP method
+    :status 403: CEO can not attend quests
+    :status 500: server error
+    """
     if request.method == 'DELETE':
         try: quest = models.Quest.objects.get(id=id)
         except: return JsonResponse({'error': "Quest not found"}, status=404)
@@ -106,7 +130,7 @@ def quest(request, id):
             try: solvers.get(employee__user__id=request.user.id)
             except: data['solved'] = False
         return JsonResponse(data, status=200)
-    elif request.method == 'POST':
+    elif request.method == 'POST':  # solve quest
         quest_id = request.POST['quest_id']
         quest = models.Quest.objects.get(id=quest_id)
         author = quest.author
@@ -119,7 +143,7 @@ def quest(request, id):
             return JsonResponse({'error': 'Can not attend to own quest'}, status=403)
         if timezone.now() > quest.datetime_end:
             return JsonResponse({'error': 'Attended too late'}, status=403)
-        if not author.is_CEO and author.employee.tokens < quest.tokens:
+        if author.is_employee and author.employee.tokens < quest.tokens:
             print("TOKEN ERROR")
             return JsonResponse({'error': 'Insufficient tokens'}, status=500)
         solvers = models.SolvedQuest.objects.filter(quest__id=quest.id)
@@ -129,7 +153,7 @@ def quest(request, id):
             return JsonResponse({'error': 'Quest already solved!'}, status=401)
 
         # update tokens of author and winner
-        if not author.is_CEO:
+        if author.is_employee:
             author.employee.tokens -= quest.tokens
             author.employee.save()
         employee.tokens += quest.tokens
@@ -156,6 +180,13 @@ def quest(request, id):
 
 
 def get_quests(request):
+    """
+    method GET: get all quests
+    :param request: 
+    :return: an array of serialized quests
+    :status 200: ok
+    :status 405: wrong HTTP method
+    """
     if request.method != 'GET':
         return JsonResponse({'error': "Wrong HTTP method"}, status=405)
     quests = []
@@ -171,6 +202,14 @@ def get_quests(request):
 
 
 def get_quest_solvers(request, id: int):
+    """
+    method GET: get all solvers of a quest
+    :param request: 
+    :param id: the id of the quest
+    :return: an array of serialized users, sorted by date solved
+    :status 200: ok
+    :status 405: wrong HTTP method
+    """
     if request.method != 'GET':
         return JsonResponse({'error': "Wrong HTTP method"}, status=405)
     solvers = models.SolvedQuest.objects.filter(quest__id=id).order_by('date_solved')
@@ -179,6 +218,12 @@ def get_quest_solvers(request, id: int):
 
 
 def leaderboard(request):  # all employees in the order of points
+    """
+    method GET: get all employees sorted by points of all quests solved
+    :param request: 
+    :return: an array of serialized users, sorted by points
+    :status 200: ok
+    """
     rez = []
     for employee in models.Employee.objects.all():
         points = utils.employee_points(employee)
@@ -189,6 +234,16 @@ def leaderboard(request):  # all employees in the order of points
 
 
 def reward(request, id):
+    """
+    method POST: reward an employee with tokens
+    :param request: 
+    :param id: the id of the employee
+    :return:
+    :status 201: ok, tokens added
+    :status 403: unauthorized, only CEO can reward
+    :status 405: wrong HTTP method
+    :status 500: internal server error
+    """
     if request.method == 'POST':
         if not request.user.is_CEO:
             return JsonResponse({'error', "Unauthorized"}, status=403)
@@ -205,6 +260,17 @@ def reward(request, id):
 
 
 def get_tokens(request, type: int):
+    """
+    method GET: get the number of tokens that will be rewarded for a request that has not been made yet
+    :param request: 
+    :param type: the type of the request, can be SALARY_INCREASE(0) or FREE_DAYS(1) or CAREER_DEVELOPMENT(2)
+    :return: the number of tokens
+    :status 200: ok
+    :status 400: type or fields are not valid
+    :status 403: unauthorized, only employees can calculate tokens
+    :status 405: wrong HTTP method
+
+    """
     if request.method == "GET":
         if request.user.is_CEO:
             return JsonResponse({'error': 'CEO does not need to calculate tokens'}, status=403)
@@ -249,6 +315,15 @@ def get_tokens(request, type: int):
 
 
 def requests(request, type: int):
+    """
+    method GET: get all requests of a type
+    :param request:
+    :param type: the type of the request, can be SALARY_INCREASE(0) or FREE_DAYS(1) or CAREER_DEVELOPMENT(2)
+    :return: an array of serialized requests
+    :status 200: ok
+    :status 400: type is not valid
+    :status 405: wrong HTTP method
+    """
     if request.method == "GET":
         try: requests = utils.get_requests(type, request.user)
         except ValueError as e:
@@ -259,6 +334,16 @@ def requests(request, type: int):
 
 
 def add_salary_increase_request(request):
+    """
+    method POST: add a salary increase request
+    :param request:
+    :return:
+    :status 201: ok, request added
+    :status 400: invalid fields
+    :status 403: unauthorized, only employees can add requests
+    :status 405: wrong HTTP method
+    :status 500: internal server error
+    """
     if request.method == "POST":
         if request.user.is_CEO:
             return JsonResponse({'error': 'CEO does not need to add any request'}, status=403)
@@ -273,8 +358,10 @@ def add_salary_increase_request(request):
             fixed_amount=fixed_amount,
             percentage=percentage,
         )
-        if req.tokens > employee.tokens:
+        if req.tokens > utils.remaining_tokens(employee):
             return JsonResponse({'error': 'Insufficient tokens'}, status=400)
+        if req.salary_increase == 0:
+            return JsonResponse({'error': 'No salary increase'}, status=400)
         try: req.save()
         except Exception as ex:
             print(ex)
@@ -291,6 +378,16 @@ def add_salary_increase_request(request):
 
 
 def add_free_days_request(request):
+    """
+    method POST: add a free days request
+    :param request:
+    :return:
+    :status 201: ok, request added
+    :status 400: invalid fields
+    :status 403: unauthorized, only employees can add requests
+    :status 405: wrong HTTP method
+    :status 500: internal server error
+    """
     if request.method == "POST":
         if request.user.is_CEO:
             return JsonResponse({'error': 'CEO does not need to add any request'}, status=403)
@@ -313,7 +410,7 @@ def add_free_days_request(request):
             date_free_days_start=datetime_start,
             date_free_days_end=datetime_end,
         )
-        if req.tokens > employee.tokens:
+        if req.tokens > utils.remaining_tokens(employee):
             return JsonResponse({'error': 'Insufficient tokens'}, status=400)
         try: req.save()
         except Exception as ex:
@@ -331,6 +428,16 @@ def add_free_days_request(request):
 
 
 def add_career_development_request(request):
+    """
+    method POST: add a career development request
+    :param request:
+    :return:
+    :status 201: ok, request added
+    :status 400: invalid fields
+    :status 403: unauthorized, only employees can add requests
+    :status 405: wrong HTTP method
+    :status 500: internal server error
+    """
     if request.method == "POST":
         if request.user.is_CEO:
             return JsonResponse({'error': 'CEO does not need to add any request'}, status=403)
@@ -348,7 +455,7 @@ def add_career_development_request(request):
             description=description,
             position_requested=position,
         )
-        if req.tokens > employee.tokens:
+        if req.tokens > utils.remaining_tokens(employee):
             return JsonResponse({'error': 'Insufficient tokens'}, status=400)
         try: req.save()
         except Exception as ex:
@@ -365,6 +472,19 @@ def add_career_development_request(request):
 
 
 def process_request(request, type: int, id: int):
+    """
+    method POST: accept a request
+    method DELETE: reject a request
+    :param request:
+    :param type: the type of the request, one of the RewardType enum
+    :param id: the id of the request
+    :return:
+    :status 201: ok, request processed
+    :status 400: invalid fields
+    :status 403: unauthorized, only CEO can process requests
+    :status 405: wrong HTTP method
+    :status 500: internal server error
+    """
     if request.method == "POST":
         if not request.user.is_CEO:
             return JsonResponse({'error': 'Only CEO can process requests'}, status=403)

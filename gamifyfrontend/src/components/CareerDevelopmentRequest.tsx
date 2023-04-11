@@ -1,9 +1,9 @@
 import {Button, Card, Container, ListGroup} from "react-bootstrap";
-import {SalaryIncreaseRequest} from "../data/Requests";
-import {PositionMap, RequestStatus, RequestStatusMap, RequestTypeMap} from "../data/enums";
-import {showDateTime} from "../api/utils";
+import {CareerDevelopmentRequest, FreeDaysRequest, SalaryIncreaseRequest} from "../data/Requests";
+import {Position, PositionMap, RequestStatus, RequestStatusMap, RequestTypeMap} from "../data/enums";
+import {showDate, showDateTime} from "../api/utils";
 
-export const SalaryIncreaseRequestCard = (props : {own: boolean, request: SalaryIncreaseRequest}) => {
+export const CareerDevelopmentRequestCard = (props : {own: boolean, request: CareerDevelopmentRequest}) => {
 
     const acceptRequest = () => {
 
@@ -25,10 +25,8 @@ export const SalaryIncreaseRequestCard = (props : {own: boolean, request: Salary
                     {!props.own && <ListGroup.Item>Salary: {props.request.user.salary}</ListGroup.Item>}
                     {!props.own && <ListGroup.Item>Position: {PositionMap.get(props.request.user.position)}</ListGroup.Item>}
                     <ListGroup.Item>On: {showDateTime(props.request.datetime_requested)}</ListGroup.Item>
-                    {props.request.fixed_amount > 0 && <ListGroup.Item>Fixed amount: {props.request.fixed_amount}</ListGroup.Item>}
-                    {props.request.percentage > 0 && <ListGroup.Item>Percentage: {props.request.percentage}</ListGroup.Item>}
-                    <ListGroup.Item> Salary increase: {props.request.salary_increase}</ListGroup.Item>
-                    <ListGroup.Item> Status: {RequestStatusMap.get(props.request.state)}</ListGroup.Item>
+                    <ListGroup.Item>Position requestrd: {PositionMap.get(props.request.position_requested)}</ListGroup.Item>
+                    <ListGroup.Item>Status: {RequestStatusMap.get(props.request.state)}</ListGroup.Item>
                 </ListGroup>
             </Card.Body>
             {!props.own && props.request.state === RequestStatus.PENDING &&

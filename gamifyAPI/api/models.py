@@ -100,7 +100,7 @@ class Image(models.Model):
 
 class Status(models.TextChoices):
     PENDING = 'P', 'Pending'
-    APPROVED = 'A', 'Approved'
+    ACCEPTED = 'A', 'Accepted'
     REJECTED = 'R', 'Rejected'
 
 
@@ -152,8 +152,9 @@ class SalaryIncreaseRequest(RewardRequest):
         return {
             **super().serialize(),
             'description': self.description,
+            'fixed_amount': self.fixed_amount,
+            'percentage': self.percentage,
             'salary_increase': self.salary_increase,
-            'salary_increase_str': self.salary_increase_str,
             'tokens': self.tokens,
         }
 
@@ -188,7 +189,7 @@ class FreeDaysRequest(RewardRequest):
     @property
     def tokens(self) -> int:
         salary_per_day = self.user.employee.salary / 30
-        return self.days_requested * (salary_per_day * settings.TOKEN_TO_MONEY_RATIO) * settings.TOKEN_FREE_DAY_PERCENTAGE
+        return int(self.days_requested * (salary_per_day * settings.TOKEN_TO_MONEY_RATIO) * settings.TOKEN_FREE_DAY_PERCENTAGE)
 
     def serialize(self):
         return {

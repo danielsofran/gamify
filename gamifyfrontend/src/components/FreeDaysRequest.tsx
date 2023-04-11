@@ -1,9 +1,9 @@
 import {Button, Card, Container, ListGroup} from "react-bootstrap";
-import {SalaryIncreaseRequest} from "../data/Requests";
+import {FreeDaysRequest, SalaryIncreaseRequest} from "../data/Requests";
 import {PositionMap, RequestStatus, RequestStatusMap, RequestTypeMap} from "../data/enums";
-import {showDateTime} from "../api/utils";
+import {showDate, showDateTime} from "../api/utils";
 
-export const SalaryIncreaseRequestCard = (props : {own: boolean, request: SalaryIncreaseRequest}) => {
+export const FreeDaysRequestCard = (props : {own: boolean, request: FreeDaysRequest}) => {
 
     const acceptRequest = () => {
 
@@ -25,10 +25,9 @@ export const SalaryIncreaseRequestCard = (props : {own: boolean, request: Salary
                     {!props.own && <ListGroup.Item>Salary: {props.request.user.salary}</ListGroup.Item>}
                     {!props.own && <ListGroup.Item>Position: {PositionMap.get(props.request.user.position)}</ListGroup.Item>}
                     <ListGroup.Item>On: {showDateTime(props.request.datetime_requested)}</ListGroup.Item>
-                    {props.request.fixed_amount > 0 && <ListGroup.Item>Fixed amount: {props.request.fixed_amount}</ListGroup.Item>}
-                    {props.request.percentage > 0 && <ListGroup.Item>Percentage: {props.request.percentage}</ListGroup.Item>}
-                    <ListGroup.Item> Salary increase: {props.request.salary_increase}</ListGroup.Item>
-                    <ListGroup.Item> Status: {RequestStatusMap.get(props.request.state)}</ListGroup.Item>
+                    <ListGroup.Item>Start: {showDate(props.request.date_free_days_start)}</ListGroup.Item>
+                    <ListGroup.Item>End: {showDate(props.request.date_free_days_end)}</ListGroup.Item>
+                    <ListGroup.Item>Status: {RequestStatusMap.get(props.request.state)}</ListGroup.Item>
                 </ListGroup>
             </Card.Body>
             {!props.own && props.request.state === RequestStatus.PENDING &&

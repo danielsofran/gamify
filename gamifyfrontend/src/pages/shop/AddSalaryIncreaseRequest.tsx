@@ -4,6 +4,7 @@ import {LegacyRef, useEffect, useRef, useState} from "react";
 import {axiosCsrf, axiosJson} from "../../api/axios";
 import {MyAlert} from "../../components/Alerts";
 import {RequestType} from "../../data/enums";
+import {useNavigate} from "react-router-dom";
 
 export const AddSalaryIncreaseRequest = () => {
     const [employee, setEmployee] = useState<Employee>(new Employee());
@@ -12,6 +13,7 @@ export const AddSalaryIncreaseRequest = () => {
     const [percentage, setPercentage] = useState<number>(0);
     const [description, setDescription] = useState<string>("");
 
+    const navigate = useNavigate();
     const [success, setSuccess] = useState<string>("");
     const [error, setError] = useState<string>("");
 
@@ -55,7 +57,22 @@ export const AddSalaryIncreaseRequest = () => {
 
     const handleSubmit = (event: any) => {
         event.preventDefault();
-        // TODO
+
+        const data = {
+            fixed_amount: isNaN(fixedAmount) ? 0 : fixedAmount,
+            percentage: isNaN(percentage) ? 0 : percentage,
+            description: description,
+        }
+        axiosCsrf.post(`api/add_request/salary_increase/`, data).then((response) => {
+            if(response.status !== 201) {
+                setError(response.data.error);
+                return;
+            }
+            setSuccess("Request successfully created");
+            navigate("/employee/requests/salary-increase/");
+        }).catch((error) => {
+            setError(error.response.data.error);
+        });
     }
 
     return (

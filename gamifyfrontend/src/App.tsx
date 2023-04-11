@@ -50,7 +50,7 @@ function App() {
 
           {/*ceo routes*/}
           <Route element={<RequireAuth allowedRoles={[UserType.CEO]} />}>
-            <Route path='ceo/' element={<Navigate to='/ceo/register_requests/'/>}/>
+            <Route path='ceo/' element={<Navigate to='/ceo/quests/'/>}/>
             <Route path='ceo/register_requests/' element={<RegisterRequests />} />
             <Route path='ceo/register_requests/view/:id/' element={<ViewRegisterRequest />} />
             <Route path='ceo/quests/' element={<Quests editable={true} />} />
@@ -69,6 +69,8 @@ function App() {
             <Route path='add_quest/' element={<AddQuest />}/>
             <Route path='profile/' element={<Profile />}/>
           </Route>
+
+          <Route path='*' element={<Navigate to='/unauthorized/'/>}/>
         </Route>
       </Routes>
   );

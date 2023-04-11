@@ -22,6 +22,8 @@ from gamifyAPI import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
+    path('admin/doc/', include('django.contrib.admindocs.urls'), name='doc'),
+    path('doc/', include('django.contrib.admindocs.urls'), name='doc'),
     path('api/', include('api.urls'), name='api'),
     path('auth2/', include('auth2.urls'), name='auth2'),
 ]

@@ -17,11 +17,12 @@ export const LoginPage = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        getCsrfToken();
+        getCsrfToken();
         if(auth.user !== null && auth.user !== undefined && auth.user.type !== undefined) {
             if(auth.user.type === UserType.CEO) navigate("/ceo");
             else if(auth.user.type === UserType.Employee) navigate("/employee");
         }
-        getCsrfToken();
     }, [])
 
     const handleSubmit = async (e) => {
@@ -35,6 +36,9 @@ export const LoginPage = () => {
                 console.warn(user, roles)
                 console.warn(auth, setAuth)
                 setAuth({user, roles});
+                if(user.type === UserType.CEO) navigate("/ceo");
+                else if(user.type === UserType.Employee) navigate("/employee");
+                window.location.reload();
                 console.info(auth)
             }).catch((error) => {
                 console.log(error);

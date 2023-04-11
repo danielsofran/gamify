@@ -71,7 +71,7 @@ def add_quest(request):
 #  than the intem purchased in the shop
 
 def quest(request, id):
-    if request.method == 'DELETE':  # TODO: returneaza banii
+    if request.method == 'DELETE':
         try: quest = models.Quest.objects.get(id=id)
         except: return JsonResponse({'error': "Quest not found"}, status=404)
         if not request.user.is_CEO or request.user != quest.author:
@@ -88,7 +88,7 @@ def quest(request, id):
         # delete the quest
         try: quest.delete()
         except: return JsonResponse({'error': "Error deleting quest"}, status=500)
-        return JsonResponse({'status': 'ok'}, status=200)
+        return JsonResponse({'status': 'ok'}, status=204)
     elif request.method == 'GET':
         try: quest = models.Quest.objects.get(id=id)
         except: return JsonResponse({'error': "Quest not found"}, status=404)
@@ -207,15 +207,195 @@ def get_tokens(request, type: int):
     if request.method == "GET":
         if request.user.is_CEO:
             return JsonResponse({'error': 'CEO does not need to calculate tokens'}, status=403)
-        employee = request.user.employee
-        fixed_amount = int(request.GET['fixed_amount'])
-        percentage = int(request.GET['percentage'])
         if type == 0:  # Salary increase
+            fixed_amount = int(request.GET['fixed_amount'])
+            percentage = int(request.GET['percentage'])
             req = models.SalaryIncreaseRequest(
                 user=request.user,
                 fixed_amount=fixed_amount,
                 percentage=percentage
             )
             return JsonResponse({'tokens': req.tokens}, status=200)
+        elif type == 1:  # Free days
+            datetime_start = str(request.GET['datetime_free_days_start'])
+            datetime_end = str(request.GET['datetime_free_days_end'])
+            try:
+                datetime_start = datetime.datetime.fromisoformat(datetime_start)
+                datetime_end = datetime.datetime.fromisoformat(datetime_end)
+                # datetime_start = datetime.datetime.strptime(request.GET['date_free_days_start'], '%Y-%m-%dT%H:%M:%S.%fZ')
+                # datetime_end = datetime.datetime.strptime(request.GET['date_free_days_end'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            except Exception as ex:
+                print(ex)
+                return JsonResponse({'error': 'Wrong dates'}, status=400)
+            if datetime_start.date() > datetime_end.date():
+                return JsonResponse({'error': 'Wrong date order'}, status=400)
+            req = models.FreeDaysRequest(
+                user=request.user,
+                date_free_days_start=datetime_start,
+                date_free_days_end=datetime_end,
+            )
+            return JsonResponse({'tokens': req.tokens}, status=200)
+        elif type == 2:  # Career development
+            try: position = models.EmployeePosition(int(request.GET['position']))
+            except Exception as ex:
+                print(ex)
+                return JsonResponse({'error': 'Wrong position'}, status=400)
+            req = models.CareerDevelopmentRequest(
+                user=request.user,
+                position_requested=position
+            )
+            return JsonResponse({'tokens': req.tokens}, status=200)
         return JsonResponse({'error': 'Wrong request type'}, status=400)
+    return JsonResponse({'error': 'Wrong HTTP method'}, status=405)
+
+
+def requests(request, type: int):
+    if request.method == "GET":
+        try: requests = utils.get_requests(type, request.user)
+        except ValueError as e:
+            return JsonResponse({'error': str(e)}, status=400)
+        requests = [req.serialize() for req in requests]
+        return JsonResponse(requests, safe=False, status=200)
+    return JsonResponse({'error': 'Wrong HTTP method'}, status=405)
+
+
+def add_salary_increase_request(request):
+    if request.method == "POST":
+        if request.user.is_CEO:
+            return JsonResponse({'error': 'CEO does not need to add any request'}, status=403)
+        employee = request.user.employee
+        data=json.loads(request.body)
+        description = data.get('description')
+        fixed_amount = data.get('fixed_amount')
+        percentage = data.get('percentage')
+        req = models.SalaryIncreaseRequest(
+            user=request.user,
+            description=description,
+            fixed_amount=fixed_amount,
+            percentage=percentage,
+        )
+        if req.tokens > employee.tokens:
+            return JsonResponse({'error': 'Insufficient tokens'}, status=400)
+        try: req.save()
+        except Exception as ex:
+            print(ex)
+            return JsonResponse({'error': 'Can not save request'}, status=500)
+        employee.tokens -= req.tokens
+        try: employee.save()
+        except Exception as ex:
+            print(ex)
+            req.delete()
+            return JsonResponse({'error': 'Can not update employee tokens'}, status=500)
+
+        return JsonResponse({'status': 'ok'}, status=201)
+    return JsonResponse({'error': 'Wrong HTTP method'}, status=405)
+
+
+def add_free_days_request(request):
+    if request.method == "POST":
+        if request.user.is_CEO:
+            return JsonResponse({'error': 'CEO does not need to add any request'}, status=403)
+        employee = request.user.employee
+        data=json.loads(request.body)
+        description = data.get('description')
+        datetime_start = data.get('datetime_free_days_start')
+        datetime_end = data.get('datetime_free_days_end')
+        try:
+            datetime_start = datetime.datetime.fromisoformat(datetime_start)
+            datetime_end = datetime.datetime.fromisoformat(datetime_end)
+        except Exception as ex:
+            print(ex)
+            return JsonResponse({'error': 'Wrong dates'}, status=400)
+        if datetime_start.date() > datetime_end.date():
+            return JsonResponse({'error': 'Wrong date order'}, status=400)
+        req = models.FreeDaysRequest(
+            user=request.user,
+            description=description,
+            date_free_days_start=datetime_start,
+            date_free_days_end=datetime_end,
+        )
+        if req.tokens > employee.tokens:
+            return JsonResponse({'error': 'Insufficient tokens'}, status=400)
+        try: req.save()
+        except Exception as ex:
+            print(ex)
+            return JsonResponse({'error': 'Can not save request'}, status=500)
+        employee.tokens -= req.tokens
+        try: employee.save()
+        except Exception as ex:
+            print(ex)
+            req.delete()
+            return JsonResponse({'error': 'Can not update employee tokens'}, status=500)
+        return JsonResponse({'status': 'ok'}, status=201)
+
+    return JsonResponse({'error': 'Wrong HTTP method'}, status=405)
+
+
+def add_career_development_request(request):
+    if request.method == "POST":
+        if request.user.is_CEO:
+            return JsonResponse({'error': 'CEO does not need to add any request'}, status=403)
+        employee = request.user.employee
+        data=json.loads(request.body)
+        description = data.get('description')
+        try: position = models.EmployeePosition(int(data.get('position')))
+        except Exception as ex:
+            print(ex)
+            return JsonResponse({'error': 'Wrong position'}, status=400)
+        if position <= employee.position:
+            return JsonResponse({'error': 'Can not request career retrogradation'}, status=400)
+        req = models.CareerDevelopmentRequest(
+            user=request.user,
+            description=description,
+            position_requested=position,
+        )
+        if req.tokens > employee.tokens:
+            return JsonResponse({'error': 'Insufficient tokens'}, status=400)
+        try: req.save()
+        except Exception as ex:
+            print(ex)
+            return JsonResponse({'error': 'Can not save request'}, status=500)
+        employee.tokens -= req.tokens
+        try: employee.save()
+        except Exception as ex:
+            print(ex)
+            req.delete()
+            return JsonResponse({'error': 'Can not update employee tokens'}, status=500)
+        return JsonResponse({'status': 'ok'}, status=201)
+    return JsonResponse({'error': 'Wrong HTTP method'}, status=405)
+
+
+def process_request(request, type: int, id: int):
+    if request.method == "POST":
+        if not request.user.is_CEO:
+            return JsonResponse({'error': 'Only CEO can process requests'}, status=403)
+        try: req = utils.get_request(type, id)
+        except ValueError as e:
+            return JsonResponse({'error': str(e)}, status=400)
+        if req.status != models.Status.PENDING:
+            return JsonResponse({'error': 'Request is not pending'}, status=400)
+        req.status = models.Status.ACCEPTED
+        try: req.save()
+        except Exception as ex:
+            print(ex)
+            return JsonResponse({'error': 'Can not save request'}, status=500)
+        if type == 0:  # Salary increase
+            employee = req.user.employee
+            employee.salary += req.salary_increase
+            try: employee.save()
+            except Exception as ex:
+                print(ex)
+                req.status = models.Status.PENDING
+                req.save()
+                return JsonResponse({'error': 'Can not update employee salary'}, status=500)
+        elif type == 2:  # Career development
+            employee = req.user.employee
+            employee.position = req.position_requested
+            try: employee.save()
+            except Exception as ex:
+                print(ex)
+                req.status = models.RequestStatus.PENDING
+                req.save()
+                return JsonResponse({'error': 'Can not update employee position'}, status=500)
+        return JsonResponse({'status': 'ok'}, status=200)
     return JsonResponse({'error': 'Wrong HTTP method'}, status=405)

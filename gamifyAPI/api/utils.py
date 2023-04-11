@@ -38,3 +38,25 @@ def update_badges(employee: models.Employee):
 
 def employee_points(employee: models.Employee):
     return sum(solved_quest.points for solved_quest in models.SolvedQuest.objects.filter(employee__id=employee.id))
+
+
+def get_requests(type: int, user: models.OwnUser):
+    model = None
+    if type == 0: model = models.SalaryIncreaseRequest
+    elif type == 1: model = models.FreeDaysRequest
+    elif type == 2: model = models.CareerDevelopmentRequest
+    else: raise ValueError('Invalid request type')
+
+    if user.is_employee: return model.objects.filter(user__id=user.id)
+    elif user.is_CEO: return model.objects.all()
+    else: raise ValueError('Invalid user type')
+
+
+def get_request(type: int, id: int):
+    if type == 0: model = models.SalaryIncreaseRequest
+    elif type == 1: model = models.FreeDaysRequest
+    elif type == 2: model = models.CareerDevelopmentRequest
+    else: raise ValueError('Invalid request type')
+
+    try: return model.objects.get(id=id)
+    except model.DoesNotExist: raise ValueError('Invalid request id')

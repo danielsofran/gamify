@@ -51,7 +51,7 @@ export const Reward = () => {
                         type="number"
                         placeholder="Enter tokens"
                         min={1}
-                        max={1000}
+                        max={10000}
                         required
                         value={tokens}
                         onChange={(event) => setTokens(parseInt(event.target.value))}

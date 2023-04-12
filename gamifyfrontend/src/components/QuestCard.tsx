@@ -1,8 +1,8 @@
-import {Quest} from "../data/Quests";
+import {Quest} from "../model/Quests";
 import {Card, ListGroup} from "react-bootstrap";
 import {showDateTime} from "../api/utils";
 import {useEffect, useState} from "react";
-import {QuestDifficulty, QuestDifficultyMap, QuestStatus} from "../data/enums";
+import {QuestDifficulty, QuestDifficultyMap, QuestStatus} from "../model/enums";
 import {useNavigate} from "react-router-dom";
 import {axiosCsrf} from "../api/axios";
 import {Color} from "react-bootstrap/types";

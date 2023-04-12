@@ -1,4 +1,4 @@
-import {BadgeReward} from "../data/BadgeReward";
+import {BadgeReward} from "../model/BadgeReward";
 import {Card, Row, Col} from "react-bootstrap";
 import {API_URL} from "../api/axios";
 

@@ -2,8 +2,8 @@ import {Navigate, Outlet, useLocation} from "react-router-dom";
 // import useAuth from "../hooks/useAuth";
 import React, {useEffect, useState} from "react";
 import {axiosJson} from "../api/axios";
-import {CEO, deserializeUser, Employee} from "../data/User";
-import {UserType} from "../data/enums";
+import {CEO, deserializeUser, Employee} from "../model/User";
+import {UserType} from "../model/enums";
 
 const RequireAuth:React.FC<{allowedRoles: UserType[]}> = ({ allowedRoles }) => {
     // const { auth, setAuth } = useAuth();

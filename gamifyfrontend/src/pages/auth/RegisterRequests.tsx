@@ -1,6 +1,6 @@
 import React, {useEffect} from "react";
 import {API_URL, axiosJson} from "../../api/axios";
-import {RegisterRequest} from "../../data/User";
+import {RegisterRequest} from "../../model/User";
 import {Button, Container} from "react-bootstrap";
 import {useNavigate} from "react-router-dom";
 

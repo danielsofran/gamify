@@ -1,6 +1,6 @@
-import {RequestType, RequestTypeMap} from "../../data/enums";
+import {RequestType, RequestTypeMap} from "../../model/enums";
 import {Col, Container, Row} from "react-bootstrap";
-import {CareerDevelopmentRequest, FreeDaysRequest, SalaryIncreaseRequest} from "../../data/Requests";
+import {CareerDevelopmentRequest, FreeDaysRequest, SalaryIncreaseRequest} from "../../model/Requests";
 import {useEffect, useState} from "react";
 import {SalaryIncreaseRequestCard} from "../../components/SalaryIncreaseRequest";
 import {axiosJson} from "../../api/axios";

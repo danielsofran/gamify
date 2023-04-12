@@ -1,6 +1,6 @@
 import { createContext, useState } from "react";
 import React from "react";
-import {CEO, Employee} from "../data/User";
+import {CEO, Employee} from "../model/User";
 
 const AuthContext = createContext({});
 

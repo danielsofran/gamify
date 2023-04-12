@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom"
-import {UserType} from "../data/enums";
+import {UserType} from "../model/enums";
 import {useEffect, useState} from "react";
 import {axiosJson} from "../api/axios";
 import {EmployeeNavbar} from "../components/EmployeeNavbar";

@@ -1,10 +1,10 @@
 import {useNavigate, useParams, useSearchParams} from "react-router-dom";
 import React, {FormEvent, useEffect, useState} from "react";
-import {Position, UserType} from "../../data/enums";
+import {Position, UserType} from "../../model/enums";
 import {API_URL, axiosJson, axiosCsrf, axiosMultipart, getCookie, getCsrfToken} from "../../api/axios";
 import {Button, Form} from "react-bootstrap";
 import {MyAlert} from "../../components/Alerts";
-import {Employee, RegisterRequest} from "../../data/User";
+import {Employee, RegisterRequest} from "../../model/User";
 
 export const ViewRegisterRequest:React.FC<{request?: RegisterRequest}> = ({request = undefined}) => {
     const id = useParams().id;

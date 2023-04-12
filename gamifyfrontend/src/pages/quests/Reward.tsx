@@ -1,9 +1,9 @@
 import {useParams} from "react-router-dom";
 import {Button, Container, Form, ListGroup} from "react-bootstrap";
-import {deserializeUser, Employee} from "../../data/User";
+import {deserializeUser, Employee} from "../../model/User";
 import {useEffect, useState} from "react";
 import {API_URL, axiosCsrf, axiosJson} from "../../api/axios";
-import {PositionMap} from "../../data/enums";
+import {PositionMap} from "../../model/enums";
 import {showDate, showDateTime} from "../../api/utils";
 import {MyAlert} from "../../components/Alerts";
 import {EmployeeInfo} from "../../components/EmployeeInfo";

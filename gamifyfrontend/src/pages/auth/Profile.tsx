@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
-import {PositionMap, UserType, UserTypeMap} from "../../data/enums";
+import {PositionMap, UserType, UserTypeMap} from "../../model/enums";
 import {useNavigate} from "react-router-dom";
 import {API_URL, axiosJson, getCsrfToken} from "../../api/axios";
-import {CEO, deserializeUser, Employee} from "../../data/User";
+import {CEO, deserializeUser, Employee} from "../../model/User";
 import {Badge, Form} from "react-bootstrap";
 import {MyAlert} from "../../components/Alerts";
 import {convertDateTimeToField} from "../../api/utils";

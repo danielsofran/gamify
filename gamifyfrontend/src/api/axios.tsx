@@ -22,7 +22,7 @@ const axiosCsrf =  axios.create({
 const axiosMultipart =  axios.create({
     baseURL: API_URL,
     headers: {
-        "Content-type": "multipart/form-data",
+        "Content-type": "multipart/form-model",
         "X-CSRFToken": getCookie("csrftoken"),
     },
     withCredentials: true,

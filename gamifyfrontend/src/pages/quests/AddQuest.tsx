@@ -1,7 +1,7 @@
 import {Button, Container, Form} from "react-bootstrap";
 import {useEffect, useState} from "react";
-import {QuestDifficulty} from "../../data/enums";
-import {CEO, deserializeUser, Employee} from "../../data/User";
+import {QuestDifficulty} from "../../model/enums";
+import {CEO, deserializeUser, Employee} from "../../model/User";
 import {axiosJson, axiosCsrf, getCsrfToken} from "../../api/axios";
 import {useNavigate} from "react-router-dom";
 import {convertDateTimeToField} from "../../api/utils";

@@ -1,6 +1,6 @@
 import {Button, Card, Container, ListGroup} from "react-bootstrap";
-import {FreeDaysRequest, SalaryIncreaseRequest} from "../data/Requests";
-import {PositionMap, RequestStatus, RequestStatusMap, RequestType, RequestTypeMap} from "../data/enums";
+import {FreeDaysRequest, SalaryIncreaseRequest} from "../model/Requests";
+import {PositionMap, RequestStatus, RequestStatusMap, RequestType, RequestTypeMap} from "../model/enums";
 import {showDate, showDateTime} from "../api/utils";
 import {axiosCsrf} from "../api/axios";
 

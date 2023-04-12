@@ -1,8 +1,8 @@
 import {Badge, Button, Container, Form} from "react-bootstrap";
 import {useEffect, useState} from "react";
-import {deserializeUser, Employee} from "../../data/User";
+import {deserializeUser, Employee} from "../../model/User";
 import {useNavigate} from "react-router-dom";
-import {Position, PositionMap, RequestType} from "../../data/enums";
+import {Position, PositionMap, RequestType} from "../../model/enums";
 import {axiosCsrf, axiosJson} from "../../api/axios";
 import {MyAlert} from "../../components/Alerts";
 

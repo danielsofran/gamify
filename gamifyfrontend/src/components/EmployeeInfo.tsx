@@ -1,8 +1,8 @@
 import {ListGroup} from "react-bootstrap";
 import {showDate} from "../api/utils";
 import {API_URL} from "../api/axios";
-import {PositionMap} from "../data/enums";
-import {Employee} from "../data/User";
+import {PositionMap} from "../model/enums";
+import {Employee} from "../model/User";
 
 export const EmployeeInfo = (props : {employee: Employee}) => {
     const {employee} = props;

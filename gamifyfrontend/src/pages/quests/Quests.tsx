@@ -1,6 +1,6 @@
 import {Col, Container, Row} from "react-bootstrap";
 import {useEffect, useState} from "react";
-import { Quest } from "../../data/Quests";
+import { Quest } from "../../model/Quests";
 import {axiosJson} from "../../api/axios";
 import {QuestCard} from "../../components/QuestCard";
 import {useNavigate} from "react-router-dom";
@@ -14,7 +14,7 @@ export const Quests = (props : {editable: boolean}) => {
             if(response.status === 200) {
                 let data = Quest.deserializeArray(response.data);
                 setQuests(data);
-                // console.log(data);
+                // console.log(model);
             }
             else {
                 console.log("Error");

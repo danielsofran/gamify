@@ -4,7 +4,7 @@ import {MyAlert} from "../../components/Alerts";
 import {axiosMultipart, getCookie, getCsrfToken} from "../../api/axios";
 import useAuth from "../../hooks/useAuth";
 import {useNavigate} from "react-router-dom";
-import {UserType} from "../../data/enums";
+import {UserType} from "../../model/enums";
 
 export const RegisterPage = () => {
     const [username, setUsername] = useState("");

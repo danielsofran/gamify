@@ -3,9 +3,9 @@ import {Button, Form} from 'react-bootstrap';
 import {axiosCsrf, DjangoCsrfToken, getCookie, getCsrfToken} from "../../api/axios";
 import {MyAlert} from "../../components/Alerts";
 import {useNavigate} from "react-router-dom";
-import {CEO, deserializeUser, Employee} from "../../data/User";
+import {CEO, deserializeUser, Employee} from "../../model/User";
 import useAuth from "../../hooks/useAuth";
-import {UserType} from "../../data/enums";
+import {UserType} from "../../model/enums";
 
 export const LoginPage = () => {
     const [username, setUsername] = React.useState('');

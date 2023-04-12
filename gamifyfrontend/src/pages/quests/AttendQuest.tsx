@@ -1,6 +1,6 @@
 import {useParams} from "react-router-dom";
 import {Button, Col, Container, Form, Row} from "react-bootstrap";
-import {Quest} from "../../data/Quests";
+import {Quest} from "../../model/Quests";
 import {FormEvent, useEffect, useState} from "react";
 import {axiosJson, axiosMultipart, getCookie, getCsrfToken} from "../../api/axios";
 import {QuestDisplay} from "../../components/QuestDisplay";

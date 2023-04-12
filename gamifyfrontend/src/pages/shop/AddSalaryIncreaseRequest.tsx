@@ -1,9 +1,9 @@
 import {Button, Container, Form, Badge} from "react-bootstrap";
-import {deserializeUser, Employee} from "../../data/User";
+import {deserializeUser, Employee} from "../../model/User";
 import {LegacyRef, useEffect, useRef, useState} from "react";
 import {axiosCsrf, axiosJson} from "../../api/axios";
 import {MyAlert} from "../../components/Alerts";
-import {RequestType} from "../../data/enums";
+import {RequestType} from "../../model/enums";
 import {useNavigate} from "react-router-dom";
 
 export const AddSalaryIncreaseRequest = () => {

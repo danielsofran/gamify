@@ -1,9 +1,9 @@
 import {useNavigate, useParams} from "react-router-dom";
-import {deserializeUser, Employee} from "../../data/User";
+import {deserializeUser, Employee} from "../../model/User";
 import {useEffect, useState} from "react";
 import {axiosJson} from "../../api/axios";
 import {Container, Table} from "react-bootstrap";
-import {EmployeePoints} from "../../data/Quests";
+import {EmployeePoints} from "../../model/Quests";
 
 export const Leaderboard = (props: {rewardable: boolean}) => {
     const [employees, setEmployees] = useState<EmployeePoints[]>([]);

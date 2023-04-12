@@ -3,7 +3,7 @@ import {Navigate, Route, Routes} from "react-router-dom";
 import Layout from "./context/Layout";
 import Unauthorized from "./pages/auth/Unauthorized";
 import RequireAuth from "./context/RequireAtuh";
-import {RequestType, UserType} from "./data/enums";
+import {RequestType, UserType} from "./model/enums";
 import {LoginPage} from "./pages/auth/LoginPage";
 import {RegisterPage} from "./pages/auth/RegisterPage";
 import {logout} from "./api/utils";

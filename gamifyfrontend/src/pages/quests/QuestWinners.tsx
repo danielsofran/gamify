@@ -39,7 +39,7 @@ export const QuestWinners = (props: {rewardable: boolean}) => {
     return (
         <Container>
             <h1> Winners: </h1>
-            <Table className="table-light" striped bordered hover>
+            <Table className="table-light text-center" striped bordered hover>
                 <thead>
                     <tr>
                         <th>#</th>

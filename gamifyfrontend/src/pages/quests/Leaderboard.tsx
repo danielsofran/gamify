@@ -41,7 +41,7 @@ export const Leaderboard = (props: {rewardable: boolean}) => {
     return (
         <Container>
             <h1> Leaderboard </h1>
-            <Table className="table-light" striped bordered hover>
+            <Table className="table-light text-center" striped bordered hover>
                 <thead>
                     <tr>
                         <th>#</th>

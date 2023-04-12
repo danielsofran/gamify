@@ -92,7 +92,7 @@ export const AttendQuest = () => {
                 <p className="mb-4"> Preview uploaded images </p>
                 <Row>
                     {imageUrls.map((url, index) => (
-                        <Col key={index} className="d-flex flex-column justify-content-center">
+                        <Col key={index} className="d-flex flex-column justify-content-center" style={{width: "100px", height: "auto"}}>
                             <img src={url} alt="preview" className="img-fluid" height="100px" width="auto" />
                         </Col>
                     ))}

@@ -101,7 +101,7 @@ class SolvedQuest(models.Model):
     """
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     quest = models.ForeignKey(Quest, on_delete=models.CASCADE)
-    date_solved = models.DateField(auto_now_add=True)
+    datetime_solved = models.DateTimeField(auto_now_add=True)
 
     @property
     def points(self):
@@ -112,7 +112,7 @@ class SolvedQuest(models.Model):
             'id': self.id,
             'employee': self.employee.serialize(),
             'quest': self.quest.serialize(),
-            'date_solved': self.date_solved,
+            'datetime_solved': self.datetime_solved,
         }
 
     class Meta:

@@ -212,7 +212,7 @@ def get_quest_solvers(request, id: int):
     """
     if request.method != 'GET':
         return JsonResponse({'error': "Wrong HTTP method"}, status=405)
-    solvers = models.SolvedQuest.objects.filter(quest__id=id).order_by('date_solved')
+    solvers = models.SolvedQuest.objects.filter(quest__id=id).order_by('datetime_solved')
     solvers = [solver.employee.user.serialize() for solver in solvers]
     return JsonResponse(solvers, safe=False, status=200)
 

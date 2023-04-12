@@ -8,6 +8,17 @@ from . import settings
 
 # Create your models here.
 class Badge(models.Model):
+    """
+    Badge model
+
+    :param name: the name of the badge
+    :param description: the description of the badge
+    :param image: the image of the badge
+    :param min_quests: the minimum number of quests the employee must complete to get the badge
+    :param min_easy_quests: the minimum number of easy quests the employee must complete to get the badge
+    :param min_medium_quests: the minimum number of medium quests the employee must complete to get the badge
+    :param min_hard_quests: the minimum number of hard quests the employee must complete to get the badge
+    """
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=1000)
     image = models.ImageField(upload_to='media/')
@@ -39,6 +50,18 @@ class QuestDifficulty(models.TextChoices):
 
 
 class Quest(models.Model):
+    """
+    Quest model
+
+    :param author: the author of the quest
+    :param title: the title of the quest
+    :param difficulty: the difficulty of the quest
+    :param description: the description of the quest
+    :param datetime_start: the start date and time of the quest
+    :param datetime_end: the end date and time of the quest
+    :param max_winners: the maximum number of winners of the quest
+    :param tokens: the number of tokens the quest gives to one winner
+    """
     author = models.ForeignKey(OwnUser, on_delete=models.SET_NULL, null=True, blank=False)
     title = models.CharField(max_length=100)
     difficulty = models.CharField(max_length=1, choices=QuestDifficulty.choices)
@@ -67,6 +90,15 @@ class Quest(models.Model):
 
 
 class SolvedQuest(models.Model):
+    """
+    SolvedQuest model
+
+    This model represents a many-to-many relationship between Employee and Quest.
+
+    :param employee: the employee who solved the quest
+    :param quest: the quest that was solved
+    :param date_solved: the date when the quest was solved
+    """
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     quest = models.ForeignKey(Quest, on_delete=models.CASCADE)
     date_solved = models.DateField(auto_now_add=True)
@@ -88,6 +120,12 @@ class SolvedQuest(models.Model):
 
 
 class Image(models.Model):
+    """
+    Image model
+
+    :param solved_quest: the solved quest that the image belongs to
+    :param image: the image
+    """
     solved_quest = models.ForeignKey(SolvedQuest, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='media/')
 
@@ -111,6 +149,16 @@ class RewardType(models.IntegerChoices):
 
 
 class RewardRequest(models.Model):
+    """
+    RewardRequest model
+
+    This model represents an abstract reward request class for the other types.
+
+    :param user: the user who requested the reward
+    :param description: the description of the reward request
+    :param datetime_requested: the date and time when the reward request was created
+    :param state: the state of the reward request
+    """
     user = models.ForeignKey(OwnUser, on_delete=models.CASCADE)
     description = models.CharField(max_length=1000)
     datetime_requested = models.DateTimeField(auto_now_add=True)
@@ -134,6 +182,15 @@ class RewardRequest(models.Model):
 
 
 class SalaryIncreaseRequest(RewardRequest):
+    """
+    SalaryIncreaseRequest model
+
+    This model represents a salary increase request.
+    It's not mandatory to fill both fields, but at least one of them must be filled.
+
+    :param fixed_amount: the fixed amount of the salary increase
+    :param percentage: the percentage of the salary increase
+    """
     fixed_amount = models.PositiveIntegerField(default=0)
     percentage = models.FloatField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
 
@@ -166,6 +223,13 @@ class SalaryIncreaseRequest(RewardRequest):
 
 
 class CareerDevelopmentRequest(RewardRequest):
+    """
+    CareerDevelopmentRequest model
+
+    This model represents a career development request.
+
+    :param position_requested: the position requested
+    """
     position_requested = models.IntegerField(choices=EmployeePosition.choices, default=EmployeePosition.INTERN, validators=[MinValueValidator(EmployeePosition.INTERN)])
 
     @property
@@ -184,6 +248,14 @@ class CareerDevelopmentRequest(RewardRequest):
 
 
 class FreeDaysRequest(RewardRequest):
+    """
+    FreeDaysRequest model
+
+    This model represents a free days request.
+
+    :param date_free_days_start: the start date of the free days interval
+    :param date_free_days_end: the end date of the free days interval
+    """
     # the interval contains both start and end dates
     date_free_days_start = models.DateField()
     date_free_days_end = models.DateField(validators=[MinValueValidator('date_free_days_start')])

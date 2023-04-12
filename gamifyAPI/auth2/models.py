@@ -8,6 +8,13 @@ from .utils import get_current_time
 
 # Create your models here.
 class OwnUser(AbstractUser):
+    """
+    Custom user model
+
+    :param image: the profile image
+    :param employee: the employee object
+    If the user is an employee, this field will be not null
+    """
     image = models.ImageField(upload_to='media/', null=True, blank=True)
     employee = models.OneToOneField('Employee', on_delete=models.CASCADE, null=True, blank=True)
 
@@ -42,6 +49,18 @@ class EmployeePosition(models.IntegerChoices):
 
 
 class Employee(models.Model):
+    """
+    Employee model
+
+    :param user: the user object
+    :param date_employed: the date when the employee was hired
+    :param salary: the salary of the employee
+    :param position: the position of the employee
+    :param date_of_birth: the date of birth of the employee
+    :param tokens: the number of tokens the employee has
+    :param discount_next_purchase: the discount the employee will have on the next purchase
+    :param badges: the badges the employee has
+    """
     user = models.OneToOneField('OwnUser', on_delete=models.CASCADE, null=True, blank=True, related_name='ownuser')
     date_employed = models.DateField()
     salary = models.PositiveIntegerField(default=2000)
@@ -69,6 +88,17 @@ class Employee(models.Model):
 
 
 class RegisterRequest(models.Model):
+    """
+    Register request model
+
+    :param username: the username of the future user
+    :param email: the email of the future user
+    :param first_name: the first name of the future user
+    :param last_name: the last name of the future user
+    :param password: the password of the future user
+    :param date_of_birth: the date of birth of the future user
+    :param image: the profile image of the future user
+    """
     username = models.CharField(max_length=20)
     email = models.EmailField(default="email@company.com")
     first_name = models.CharField(max_length=50)

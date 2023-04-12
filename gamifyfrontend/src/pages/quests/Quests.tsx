@@ -25,19 +25,12 @@ export const Quests = (props : {editable: boolean}) => {
         });
     }, []);
 
-    const addQuest = () => {
-        navigate("/add_quest/");
-    }
-
     return (
         <Container fluid>
-            <div className="d-flex justify-content-between mb-3">
-                <h1>Quest List</h1>
-                <button className="btn btn-primary" onClick={addQuest}>Create Quest</button>
-            </div>
+            <h1>Quest List</h1>
             <Row xs={1} md={2} lg={3} xl={4} className="g-4">
                 {quests.map((quest) => (
-                    <Col>
+                    <Col key={quest.id}>
                         <QuestCard key={quest.id} quest={quest} editable={props.editable} />
                     </Col>
                 ))}

@@ -8,7 +8,10 @@ import {MyNavbar} from "./MyNavbar";
 export const CeoNavbar : React.FC = () => {
     return (
         <MyNavbar>
-            <Nav.Link href="/ceo/quests">Quests</Nav.Link>
+            <NavDropdown title="Quests" id="basic-nav-dropdown">
+                <NavDropdown.Item href="/ceo/quests">View </NavDropdown.Item>
+                <NavDropdown.Item href="/quests/create">Create</NavDropdown.Item>
+            </NavDropdown>
             <Nav.Link href="/ceo/register_requests">Register Requests</Nav.Link>
             <NavDropdown title="Requests" id="basic-nav-dropdown">
                 <NavDropdown.Item href="/ceo/requests/salary-increase">Salary increase requests </NavDropdown.Item>

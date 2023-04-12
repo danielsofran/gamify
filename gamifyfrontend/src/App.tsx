@@ -66,7 +66,7 @@ function App() {
           {/*common routes*/}
           <Route element={<RequireAuth allowedRoles={[UserType.CEO, UserType.Employee]} />}>
             <Route path='logout/' action={() => logout()}/>
-            <Route path='add_quest/' element={<AddQuest />}/>
+            <Route path='quests/create' element={<AddQuest />}/>
             <Route path='profile/' element={<Profile />}/>
           </Route>
 
